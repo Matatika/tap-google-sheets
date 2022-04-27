@@ -33,19 +33,33 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         """Parse response, build response back up into json, update stream schema."""
-        headings = response.json()["values"][0]
-        data = response.json()["values"][1:]
+        headings, *data = response.json()["values"]
         data_rows = []
 
+        mask = [bool(x) for x in headings]
+
         for values in data:
-            data_rows.append(dict(zip(headings, values)))
+            data_rows.append(
+                dict([(h, v) for m, h, v in zip(mask, headings, values) if m])
+            )
 
         if not self.sheet_headings:
             properties = []
             for column in headings:
-                properties.append(th.Property(column, th.StringType()))
+                if column:
+                    properties.append(th.Property(column, th.StringType()))
 
             self.schema = th.PropertiesList(*properties).to_dict()
+
+            for stream_map in self.stream_maps:
+                if stream_map.stream_alias == self.name:
+                    stream_map.transformed_schema = self.schema
+
+            for stream_map in self.stream_maps:
+                self.logger.error(stream_map.__dict__)
+
             self.sheet_headings = headings
+
+            self._write_schema_message()
 
         yield from extract_jsonpath(self.records_jsonpath, input=data_rows)
