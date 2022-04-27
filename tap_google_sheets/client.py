@@ -1,16 +1,14 @@
 """REST client handling, including google_sheetsStream base class."""
 
-import requests
 from pathlib import Path
-from typing import Any, Dict, Optional, Iterable
+from typing import Any, Dict, Iterable, Optional
 
+import requests
 from memoization import cached
-
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 
 from tap_google_sheets.auth import GoogleSheetsAuthenticator
-
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
@@ -23,9 +21,8 @@ class GoogleSheetsBaseStream(RESTStream):
     records_jsonpath = "$[*]"  # Or override `parse_response`.
     next_page_token_jsonpath = "$.next_page"  # Or override `get_next_page_token`.
 
-    @property
     @cached
-    def authenticator(self) -> GoogleSheetsAuthenticator:
+    def authenticator(self):
         """Return a new authenticator object."""
         base_auth_url = "https://oauth2.googleapis.com/token"
         return GoogleSheetsAuthenticator(stream=self, auth_endpoint=base_auth_url)
@@ -82,8 +79,3 @@ class GoogleSheetsBaseStream(RESTStream):
         """Parse the response and return an iterator of result rows."""
         # TODO: Parse response body and return a set of records.
         yield from extract_jsonpath(self.records_jsonpath, input=response.json())
-
-    def post_process(self, row: dict, context: Optional[dict]) -> dict:
-        """As needed, append or transform raw data to match expected structure."""
-        # TODO: Delete this method if not needed.
-        return row

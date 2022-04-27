@@ -1,59 +1,51 @@
 """Stream type classes for tap-google-sheets."""
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, List, Iterable
+from typing import Iterable
 
+import requests
 from singer_sdk import typing as th
+from singer_sdk.helpers.jsonpath import extract_jsonpath
 
 from tap_google_sheets.client import GoogleSheetsBaseStream
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
+
 class GoogleSheetsStream(GoogleSheetsBaseStream):
     """Google sheets stream."""
-    # Set as child of GoogleDriveFileList
-    # Only use this stream if the file passed is spreadsheet
+
+    sheet_headings = None
+    name = "spreadsheetstwo"
+    primary_key = None
+
+    # Start with empty schema then update in parse_response
+    schema = th.PropertiesList().to_dict()
 
     @property
     def path(self):
-        #path = "https://sheets.googleapis.com/v4/"
-        path = "spreadsheets/" + self.config["file_id"] + '/'
-        path = path + "values/Sheet1!A1:B6"
+        """Set the path for the stream."""
+        path = "spreadsheets/" + self.config.get("sheet_id") + "/"
+        path = path + "values/" + "Sheet1"  # self.config.get("sheet_name")
+        if self.config.get("range"):
+            path = path + "!" + self.config.get("range")
         return path
 
-    # @property
-    # def schema(self) -> dict:
-    #     """Return dictionary of record schema.
+    def parse_response(self, response: requests.Response) -> Iterable[dict]:
+        """Parse response, build response back up into json, update stream schema."""
+        headings = response.json()["values"][0]
+        data = response.json()["values"][1:]
+        data_rows = []
 
-    #     Dynamically detect the json schema for the stream.
-    #     This is evaluated prior to any records being retrieved.
-    #     """
-    #     properties: List[th.Property] = []
+        for values in data:
+            data_rows.append(dict(zip(headings, values)))
 
-    #     for file_path in self.get_file_paths():
-    #         for header in self.get_rows(file_path):
-    #             break
-    #         break
+        if not self.sheet_headings:
+            properties = []
+            for column in headings:
+                properties.append(th.Property(column, th.StringType()))
 
-    #     for column in header:
-    #         # Set all types to string
-    #         # TODO: Try to be smarter about inferring types.
-    #         properties.append(th.Property(column, th.StringType()))
-    #     return th.PropertiesList(*properties).to_dict()
+            self.schema = th.PropertiesList(*properties).to_dict()
+            self.sheet_headings = headings
 
-    # def get_url_params(self, context: Optional[dict], next_page_token: Optional[Any]) -> Dict[str, Any]:
-    #     super().get_url_params(context, next_page_token)
-    #     params = {}
-    #     params["mimeType"] = "text/csv"
-    #     return params
-
-
-
-    name = "spreadsheets"
-    #records_jsonpath = "$.values[*]"
-    #primary_keys = ["id"]
-    primary_keys = None
-    #replication_key = "modified"
-    schema = th.PropertiesList(
-        th.Property("values", th.ArrayType(th.ArrayType(th.StringType)))
-    ).to_dict()
+        yield from extract_jsonpath(self.records_jsonpath, input=data_rows)

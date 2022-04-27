@@ -2,12 +2,10 @@
 
 from typing import List
 
-from singer_sdk import Tap, Stream
+from singer_sdk import Stream, Tap
 from singer_sdk import typing as th
 
-from tap_google_sheets.streams import (
-    GoogleSheetsStream,
-)
+from tap_google_sheets.streams import GoogleSheetsStream
 
 STREAM_TYPES = [
     GoogleSheetsStream,
@@ -16,6 +14,7 @@ STREAM_TYPES = [
 
 class TapGoogleSheets(Tap):
     """google_sheets tap class."""
+
     name = "tap-google-sheets"
 
     config_jsonschema = th.PropertiesList(
@@ -23,25 +22,21 @@ class TapGoogleSheets(Tap):
             "client_id",
             th.StringType,
             required=True,
-            description="Your google client_id"
+            description="Your google client_id",
         ),
         th.Property(
             "client_secret",
             th.StringType,
             required=True,
-            description="Your google client_secret"
+            description="Your google client_secret",
         ),
         th.Property(
             "refresh_token",
             th.StringType,
             required=True,
-            description="Your google refresh token"
+            description="Your google refresh token",
         ),
-        th.Property(
-            "file_id",
-            th.StringType,
-            description="Your google file id"
-        ),
+        th.Property("sheet_id", th.StringType, description="Your google sheet id"),
     ).to_dict()
 
     def discover_streams(self) -> List[Stream]:

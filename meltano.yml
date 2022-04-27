@@ -17,8 +17,11 @@ plugins:
       kind: password
     - name: refresh_token
       kind: password
-    - name: file_id
+    - name: sheet_id
   loaders:
   - name: target-jsonl
     variant: andyh1203
     pip_url: target-jsonl
+  - name: target-postgres
+    variant: transferwise
+    pip_url: pipelinewise-target-postgres
