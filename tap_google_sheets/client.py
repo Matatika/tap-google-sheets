@@ -21,7 +21,7 @@ class GoogleSheetsBaseStream(RESTStream):
     records_jsonpath = "$[*]"  # Or override `parse_response`.
     next_page_token_jsonpath = "$.next_page"  # Or override `get_next_page_token`.
 
-    @cached
+    @property
     def authenticator(self):
         """Return a new authenticator object."""
         base_auth_url = "https://oauth2.googleapis.com/token"
