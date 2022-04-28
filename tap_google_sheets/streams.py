@@ -22,14 +22,14 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
     # Start with empty schema then update in parse_response
     schema = th.PropertiesList().to_dict()
 
-    @property
-    def path(self):
-        """Set the path for the stream."""
-        path = "spreadsheets/" + self.config.get("sheet_id") + "/"
-        path = path + "values/" + "Sheet1"  # self.config.get("sheet_name")
-        if self.config.get("range"):
-            path = path + "!" + self.config.get("range")
-        return path
+    # @property
+    # def path(self):
+    #     """Set the path for the stream."""
+    #     path = "spreadsheets/" + self.config.get("sheet_id") + "/"
+    #     path = path + "values/" + "Sheet1"  # self.config.get("sheet_name")
+    #     if self.config.get("range"):
+    #         path = path + "!" + self.config.get("range")
+    #     return path
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         """Parse response, build response back up into json, update stream schema."""
@@ -54,9 +54,6 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
             for stream_map in self.stream_maps:
                 if stream_map.stream_alias == self.name:
                     stream_map.transformed_schema = self.schema
-
-            for stream_map in self.stream_maps:
-                self.logger.error(stream_map.__dict__)
 
             self.sheet_headings = headings
 
