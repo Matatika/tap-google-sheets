@@ -1,5 +1,10 @@
 # tap-google-sheets
 
+[![test](https://github.com/matatika/tap-google-sheets/actions/workflows/ci_workflow.yml/badge.svg)](https://github.com/matatika/tap-google-sheets/actions/workflows/ci_workflow.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+<a href="https://github.com/Matatika/tap-google-sheets/blob/master/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/Matatika/tap-google-sheets"></a>
+[![Python](https://img.shields.io/static/v1?logo=python&label=python&message=3.7%20|%203.8%20|%203.9&color=blue)]()
+
 This Google Sheets tap produces JSON-formatted data following the Singer spec.
 
 `tap-google-sheets` is a Singer tap for the Google [Sheets API](https://developers.google.com/sheets/api?hl=en_GB) built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
