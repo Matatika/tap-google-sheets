@@ -49,9 +49,36 @@ Setting | Required | Type | Description |
 
 ---
 
+## FAQ / Things to Note
+
+* Currently the tap supports sheets that have the column name in the first row.
+
+(The tap builds a usable json object up by using these column names)
+
+* The tap will skip all columns without a name
+
+* If syncing to a database that all the column names are unique.
+
+
+---
+
+## Roadmap
+
+- [ ] Add setting to optionally allow renaming the sheet stream name (file or table name output by stream).
+- [ ] Add setting to optionally allow the selection of a range of data from a sheet.
+
+
+- [ ] Improve default behavior of a sheet with multiple columns of the same name and `target-postgres`.
+
+Currently if have duplicate column names, a database will either:
+- Throw an error that you can't have two columns with the same name.
+- Sync all the data but only persist the data from the last duplicate column into the table.
+
+---
+
 ## Installation
 
-Use pip to pinstall a release from GitHub.
+Use pip to install a release from GitHub.
 
 ```bash
 pip install git+https://github.com/Matatika/tap-shopify@vx.x.x
