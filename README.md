@@ -1,33 +1,52 @@
 # tap-google-sheets
 
-`tap-google-sheets` is a Singer tap for google_sheets.
+This Google Sheets tap produces JSON-formatted data following the Singer spec.
 
-Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
+`tap-google-sheets` is a Singer tap for the Google [Sheets API](https://developers.google.com/sheets/api?hl=en_GB) built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
-## Installation
-
-- [ ] `Developer TODO:` Update the below as needed to correctly describe the install procedure. For instance, if you do not have a PyPi repo, or if you want users to directly install from your git repo, you can modify this step as appropriate.
-
-```bash
-pipx install tap-google-sheets
-```
+---
 
 ## Configuration
 
-### Accepted Config Options
-
-- [ ] `Developer TODO:` Provide a list of config options accepted by the tap.
-
-A full list of supported settings and capabilities for this
-tap is available by running:
+A full list of supported settings and capabilities for this tap is available by running:
 
 ```bash
 tap-google-sheets --about
 ```
 
-### Source Authentication and Authorization
+### Getting Your Credentials
 
-- [ ] `Developer TODO:` If your tap requires special access on the source system, or any special authentication requirements, provide those here.
+**Client ID, Client Secret & Refresh Token**
+
+To get your google credentials we reccommend reading and following the [OAuth 2.0 Google API Documentation](https://developers.google.com/identity/protocols/oauth2)
+
+The tap calls [Method: spreadsheets.values.get](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/get?hl=en_GB), and on that page you can see the **required scopes** your credentials need.
+
+
+**Sheet ID**
+
+When you open your Google sheet, the url will look something like: `https://docs.google.com/spreadsheets/d/abc123/edit#gid=0`
+
+Your `sheet_id` are the characters after `spreadsheets/d/`, so in this case would be `abc123`.
+
+---
+
+### Credentials
+
+Setting | Required | Type | Description |
+------- | -------- | ---- | ----------- |
+`client_id` | Required | String | Your google client id
+`client_secret` | Required | String | Your google client secret
+`refresh_token` | Required | String | Your google refresh token
+`sheet_id` | Required | String | Your target google sheet id
+
+---
+
+## Installation
+
+```bash
+pipx install tap-google-sheets
+```
 
 ## Usage
 
@@ -40,10 +59,6 @@ tap-google-sheets --version
 tap-google-sheets --help
 tap-google-sheets --config CONFIG --discover > ./catalog.json
 ```
-
-## Developer Resources
-
-- [ ] `Developer TODO:` As a first step, scan the entire project for the text "`TODO:`" and complete any recommended steps, deleting the "TODO" references once completed.
 
 ### Initialize your Development Environment
 
