@@ -25,7 +25,9 @@ The tap calls [Method: spreadsheets.values.get](https://developers.google.com/sh
 
 **Sheet ID**
 
-When you open your Google sheet, the url will look something like: `https://docs.google.com/spreadsheets/d/abc123/edit#gid=0`
+When you open your Google sheet, the url will look something like: 
+
+`https://docs.google.com/spreadsheets/d/abc123/edit#gid=0`
 
 Your `sheet_id` are the characters after `spreadsheets/d/`, so in this case would be `abc123`.
 
@@ -44,8 +46,10 @@ Setting | Required | Type | Description |
 
 ## Installation
 
+Use pip to pinstall a release from GitHub.
+
 ```bash
-pipx install tap-google-sheets
+pip install git+https://github.com/Matatika/tap-shopify@vx.x.x
 ```
 
 ## Usage
