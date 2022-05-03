@@ -21,9 +21,15 @@ tap-google-sheets --about
 
 ### Getting Your Credentials
 
+**OAuth**
+
+At [Matatika](matatika.com), we have OAuth support for this tap. This means when you sign up and use this tap in one of our workspaces you can go through the Google OAuth flow, allowing the Matatika app access to your Google Sheet to sync data on your behalf.
+
+Using the tap this way means you do not have to get any of the following credentials.
+
 **Client ID, Client Secret & Refresh Token**
 
-To get your google credentials we reccommend reading and following the [OAuth 2.0 Google API Documentation](https://developers.google.com/identity/protocols/oauth2)
+To get your google credentials we recommend reading and following the [OAuth 2.0 Google API Documentation](https://developers.google.com/identity/protocols/oauth2)
 
 The tap calls [Method: spreadsheets.values.get](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/get?hl=en_GB), and on that page you can see the **required scopes** your credentials need.
 
