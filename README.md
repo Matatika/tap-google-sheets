@@ -23,7 +23,7 @@ tap-google-sheets --about
 
 **OAuth**
 
-At [Matatika](matatika.com), we have OAuth support for this tap. This means when you sign up and use this tap in one of our workspaces you can go through the Google OAuth flow, allowing the Matatika app access to your Google Sheet to sync data on your behalf.
+At [Matatika](https://www.matatika.com/), we have OAuth support for this tap. This means when you sign up and use this tap in one of our workspaces you can go through the Google OAuth flow, allowing the Matatika app access to your Google Sheet to sync data on your behalf.
 
 Using the tap this way means you do not have to get any of the following credentials.
 
