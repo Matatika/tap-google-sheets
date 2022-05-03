@@ -19,17 +19,17 @@ class TapGoogleSheets(Tap):
 
     config_jsonschema = th.PropertiesList(
         th.Property(
-            "client_id",
+            "oauth_credentials.client_id",
             th.StringType,
             description="Your google client_id",
         ),
         th.Property(
-            "client_secret",
+            "oauth_credentials.client_secret",
             th.StringType,
             description="Your google client_secret",
         ),
         th.Property(
-            "refresh_token",
+            "oauth_credentials.refresh_token",
             th.StringType,
             description="Your google refresh token",
         ),

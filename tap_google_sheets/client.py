@@ -28,14 +28,14 @@ class GoogleSheetsBaseStream(RESTStream):
         """Return a new authenticator object."""
         base_auth_url = "https://oauth2.googleapis.com/token"
 
-        client_id = self.config.get("client_id")
-        client_secret = self.config.get("client_secret")
-        refresh_token = self.config.get("refresh_token")
+        oauth_credentials = self.config.get("oauth_credentials", {})
+
+        client_id = oauth_credentials.get("client_id")
+        client_secret = oauth_credentials.get("client_secret")
+        refresh_token = oauth_credentials.get("refresh_token")
 
         if client_id and client_secret and refresh_token:
             return GoogleSheetsAuthenticator(stream=self, auth_endpoint=base_auth_url)
-
-        oauth_credentials = self.config.get("oauth_credentials", {})
 
         auth_body = {}
         auth_headers = {}

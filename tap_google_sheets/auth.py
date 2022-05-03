@@ -11,11 +11,12 @@ class GoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta):
     @property
     def oauth_request_body(self) -> dict:
         """Define the OAuth request body for the GoogleSheets API."""
+        oauth_credentials = self.config.get("oauth_credentials", {})
         return {
             "grant_type": "refresh_token",
-            "client_id": self.config.get("client_id"),
-            "client_secret": self.config.get("client_secret"),
-            "refresh_token": self.config.get("refresh_token"),
+            "client_id": oauth_credentials.get("client_id"),
+            "client_secret": oauth_credentials.get("client_secret"),
+            "refresh_token": oauth_credentials.get("refresh_token"),
         }
 
 

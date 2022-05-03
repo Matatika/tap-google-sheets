@@ -11,11 +11,11 @@ plugins:
     - catalog
     - discover
     settings:
-    - name: client_id
+    - name: oauth_credentials.client_id
       kind: password
-    - name: client_secret
+    - name: oauth_credentials.client_secret
       kind: password
-    - name: refresh_token
+    - name: oauth_credentials.refresh_token
       kind: password
     - name: sheet_id
   loaders:

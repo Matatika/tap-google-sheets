@@ -48,10 +48,18 @@ Your `sheet_id` are the characters after `spreadsheets/d/`, so in this case woul
 
 Setting | Required | Type | Description |
 ------- | -------- | ---- | ----------- |
-`client_id` | Required | String | Your google client id
-`client_secret` | Required | String | Your google client secret
-`refresh_token` | Required | String | Your google refresh token
+`oauth_credentials.client_id` | Required | String | Your google client id
+`oauth_credentials.client_secret` | Required | String | Your google client secret
+`oauth_credentials.refresh_token` | Required | String | Your google refresh token
 `sheet_id` | Required | String | Your target google sheet id
+
+### Environment Variable
+
+These settings expand into environment variables of:
+- `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_CLIENT_ID`
+- `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_CLIENT_SECRET`
+- `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_REFRESH_TOKEN`
+- `TAP_GOOGLE_SHEETS_SHEET_ID`
 
 ---
 
