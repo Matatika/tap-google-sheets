@@ -1,6 +1,5 @@
 """google_sheets Authentication."""
 
-
 from singer_sdk.authenticators import OAuthAuthenticator, SingletonMeta
 
 
@@ -18,3 +17,12 @@ class GoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta):
             "client_secret": self.config.get("client_secret"),
             "refresh_token": self.config.get("refresh_token"),
         }
+
+
+class ProxyGoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta):
+    """API Authenticator for Proxy OAuth 2.0 flows."""
+
+    @property
+    def oauth_request_body(self) -> dict:
+        """Define the OAuth request body for the GoogleAds API."""
+        return {}

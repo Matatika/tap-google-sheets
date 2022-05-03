@@ -7,7 +7,10 @@ import requests
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 
-from tap_google_sheets.auth import GoogleSheetsAuthenticator
+from tap_google_sheets.auth import (
+    GoogleSheetsAuthenticator,
+    ProxyGoogleSheetsAuthenticator,
+)
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
@@ -24,7 +27,32 @@ class GoogleSheetsBaseStream(RESTStream):
     def authenticator(self):
         """Return a new authenticator object."""
         base_auth_url = "https://oauth2.googleapis.com/token"
-        return GoogleSheetsAuthenticator(stream=self, auth_endpoint=base_auth_url)
+
+        client_id = self.config.get("client_id")
+        client_secret = self.config.get("client_secret")
+        refresh_token = self.config.get("refresh_token")
+
+        if client_id and client_secret and refresh_token:
+            return GoogleSheetsAuthenticator(stream=self, auth_endpoint=base_auth_url)
+
+        oauth_credentials = self.config.get("oauth_credentials", {})
+
+        auth_body = {}
+        auth_headers = {}
+
+        auth_body["refresh_token"] = oauth_credentials.get("refresh_token")
+        auth_body["grant_type"] = "refresh_token"
+
+        auth_headers["authorization"] = oauth_credentials.get("refresh_proxy_url_auth")
+        auth_headers["Content-Type"] = "application/json"
+        auth_headers["Accept"] = "application/json"
+
+        return ProxyGoogleSheetsAuthenticator(
+            stream=self,
+            auth_endpoint=oauth_credentials.get("refresh_proxy_url"),
+            auth_body=auth_body,
+            auth_headers=auth_headers,
+        )
 
     @property
     def http_headers(self) -> dict:

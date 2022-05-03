@@ -21,19 +21,16 @@ class TapGoogleSheets(Tap):
         th.Property(
             "client_id",
             th.StringType,
-            required=True,
             description="Your google client_id",
         ),
         th.Property(
             "client_secret",
             th.StringType,
-            required=True,
             description="Your google client_secret",
         ),
         th.Property(
             "refresh_token",
             th.StringType,
-            required=True,
             description="Your google refresh token",
         ),
         th.Property("sheet_id", th.StringType, description="Your google sheet id"),
