@@ -73,6 +73,13 @@ These settings expand into environment variables of:
 
 * If syncing to a database that all the column names are unique.
 
+### Loaders Tested
+
+- [target-jsonl](https://hub.meltano.com/targets/jsonl)
+- [target-csv](https://hub.meltano.com/targets/csv)
+- [target-postgres transferwise](https://hub.meltano.com/targets/postgres) - Bug - Produces tables for not selected streams, `files` and an extra `spreadsheets`.
+- [target-snowflake meltano](https://hub.meltano.com/targets/snowflake--meltano)
+
 
 ---
 
