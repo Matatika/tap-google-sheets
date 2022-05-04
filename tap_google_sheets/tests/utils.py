@@ -8,9 +8,9 @@ from tap_google_sheets.tap import TapGoogleSheets
 SINGER_MESSAGES = []
 
 MOCK_CONFIG = {
-    "client_id": "123",
-    "client_secret": "123",
-    "refresh_token": "123",
+    "oauth_credentials.client_id": "123",
+    "oauth_credentials.client_secret": "123",
+    "oauth_credentials.refresh_token": "123",
     "sheet_id": "12345",
 }
 
