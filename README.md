@@ -78,8 +78,8 @@ These settings expand into environment variables of:
 
 ## Roadmap
 
-- [ ] Add setting to optionally allow renaming the sheet stream name (file or table name output by stream).
-- [ ] Add setting to optionally allow the selection of a range of data from a sheet.
+- [ ] Add setting to optionally allow renaming the sheet stream name. (File or table name output by stream).
+- [ ] Add setting to optionally allow the selection of a range of data from a sheet. (Add an optional range setting).
 
 
 - [ ] Improve default behavior of a sheet with multiple columns of the same name and `target-postgres`.

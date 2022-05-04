@@ -24,7 +24,7 @@ class TestCore(unittest.TestCase):
         catalog = TapGoogleSheets(self.mock_config).discover_streams()
 
         # expect valid catalog to be discovered
-        self.assertEqual(len(catalog), 1, "Total streams from default catalog")
+        self.assertEqual(len(catalog), 2, "Total streams from default catalog")
 
     # Run standard built-in tap tests from the SDK:
     @responses.activate()
@@ -34,6 +34,12 @@ class TestCore(unittest.TestCase):
             responses.POST,
             "https://oauth2.googleapis.com/token",
             json={"access_token": "new_token"},
+            status=200,
+        ),
+        responses.add(
+            responses.GET,
+            "https://www.googleapis.com/drive/v2/files/12345",
+            json={"title": "test"},
             status=200,
         ),
         responses.add(

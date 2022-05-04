@@ -1,7 +1,7 @@
 """Stream type classes for tap-google-sheets."""
 
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Optional
 
 import requests
 from singer_sdk import typing as th
@@ -12,12 +12,35 @@ from tap_google_sheets.client import GoogleSheetsBaseStream
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
 
+class GoogleFilesStream(GoogleSheetsBaseStream):
+    """Google files stream."""
+
+    primary_key = None
+    name = "files"
+
+    @property
+    def path(self):
+        """Set the path for the stream."""
+        self.url_base = "https://www.googleapis.com/drive/v2/files/"
+        path = self.url_base + self.config.get("sheet_id")
+        return path
+
+    schema = th.PropertiesList(th.Property("title", th.StringType)).to_dict()
+
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
+        """Return context to pass to child stream."""
+        return {"title": record["title"]}
+
+
 class GoogleSheetsStream(GoogleSheetsBaseStream):
     """Google sheets stream."""
 
+    parent_stream_type = GoogleFilesStream
+
     sheet_headings = None
-    name = "spreadsheet"
     primary_key = None
+
+    name = "spreadsheet"
 
     # Start with empty schema then update in parse_response
     schema = th.PropertiesList().to_dict()
@@ -25,10 +48,9 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
     @property
     def path(self):
         """Set the path for the stream."""
-        path = "spreadsheets/" + self.config.get("sheet_id") + "/"
+        self.url_base = "https://sheets.googleapis.com/v4/spreadsheets/"
+        path = self.url_base + self.config.get("sheet_id") + "/"
         path = path + "values/" + "Sheet1"  # self.config.get("sheet_name")
-        if self.config.get("range"):
-            path = path + "!" + self.config.get("range")
         return path
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
@@ -53,6 +75,11 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
 
             for stream_map in self.stream_maps:
                 if stream_map.stream_alias == self.name:
+                    if self.partitions:
+                        stream_name_raw = self.partitions[0].get("title", "")
+                        stream_name = stream_name_raw.lower().replace(" ", "_")
+                        stream_map.stream_alias = stream_name
+
                     stream_map.transformed_schema = self.schema
 
             self.sheet_headings = headings

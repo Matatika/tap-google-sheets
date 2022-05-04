@@ -18,7 +18,7 @@ SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 class GoogleSheetsBaseStream(RESTStream):
     """google_sheets stream class."""
 
-    url_base = "https://sheets.googleapis.com/v4/"
+    url_base = ""
 
     records_jsonpath = "$[*]"  # Or override `parse_response`.
     next_page_token_jsonpath = "$.next_page"  # Or override `get_next_page_token`.
