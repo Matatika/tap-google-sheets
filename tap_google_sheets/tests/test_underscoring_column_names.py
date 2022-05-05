@@ -9,7 +9,7 @@ import tap_google_sheets.tests.utils as test_utils
 from tap_google_sheets.tap import TapGoogleSheets
 
 
-class TestIgnoringUnnamedColumns(unittest.TestCase):
+class TestUnderscoringColumnNamed(unittest.TestCase):
     """Test class for core tap tests."""
 
     def setUp(self):
@@ -21,13 +21,12 @@ class TestIgnoringUnnamedColumns(unittest.TestCase):
         singer.write_message = test_utils.accumulate_singer_messages
 
     @responses.activate()
-    def test_ignoring_unnamed_columns(self):
+    def test_underscoring_column_names(self):
 
-        self.missing_column_response = {
+        self.column_response = {
             "values": [
-                ["Column_One", "", "Column_Two"],
-                ["1", "1", "1"],
-                ["2", "2", "2"],
+                ["Column One", "Column Two"],
+                ["1", "1"]
             ]
         }
 
@@ -46,13 +45,13 @@ class TestIgnoringUnnamedColumns(unittest.TestCase):
         responses.add(
             responses.GET,
             "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1!1:1",
-            json={"values": [["Column_One", "", "Column_Two"]]},
+            json={"values": [["Column_One", "Column_Two"]]},
             status=200,
         ),
         responses.add(
             responses.GET,
             "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1",
-            json=self.missing_column_response,
+            json=self.column_response,
             status=200,
         )
 
@@ -60,19 +59,14 @@ class TestIgnoringUnnamedColumns(unittest.TestCase):
 
         tap.sync_all()
 
-        self.assertEqual(len(test_utils.SINGER_MESSAGES), 6)
+        self.assertEqual(len(test_utils.SINGER_MESSAGES), 4)
         self.assertIsInstance(test_utils.SINGER_MESSAGES[0], singer.SchemaMessage)
         self.assertIsInstance(test_utils.SINGER_MESSAGES[1], singer.SchemaMessage)
         self.assertIsInstance(test_utils.SINGER_MESSAGES[2], singer.RecordMessage)
         self.assertIsInstance(test_utils.SINGER_MESSAGES[3], singer.StateMessage)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[4], singer.RecordMessage)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[5], singer.StateMessage)
 
-        # Assert that the second unnamed column and its values are ignored
+        # Assert that column names have been underscored
         self.assertEquals(
             test_utils.SINGER_MESSAGES[2].record, {"Column_One": "1", "Column_Two": "1"}
         )
 
-        self.assertEquals(
-            test_utils.SINGER_MESSAGES[4].record, {"Column_One": "2", "Column_Two": "2"}
-        )
