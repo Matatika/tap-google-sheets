@@ -18,13 +18,32 @@ class TestCore(unittest.TestCase):
 
         self.mock_config = test_utils.MOCK_CONFIG
 
+    @responses.activate()
     def test_base_credentials_discovery(self):
         """Test basic discover sync"""
+        responses.add(
+            responses.POST,
+            "https://oauth2.googleapis.com/token",
+            json={"access_token": "new_token"},
+            status=200,
+        ),
+        responses.add(
+            responses.GET,
+            "https://www.googleapis.com/drive/v2/files/12345",
+            json={"title": "file_name"},
+            status=200,
+        ),
+        responses.add(
+            responses.GET,
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1!1:1",
+            json={"values": [["column_one", "column_two"]]},
+            status=200,
+        )
 
         catalog = TapGoogleSheets(self.mock_config).discover_streams()
 
         # expect valid catalog to be discovered
-        self.assertEqual(len(catalog), 2, "Total streams from default catalog")
+        self.assertEqual(len(catalog), 1, "Total streams from default catalog")
 
     # Run standard built-in tap tests from the SDK:
     @responses.activate()
@@ -39,13 +58,19 @@ class TestCore(unittest.TestCase):
         responses.add(
             responses.GET,
             "https://www.googleapis.com/drive/v2/files/12345",
-            json={"title": "test"},
+            json={"title": "file_name"},
+            status=200,
+        ),
+        responses.add(
+            responses.GET,
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1!1:1",
+            json={"values": [["column_one", "column_two"]]},
             status=200,
         ),
         responses.add(
             responses.GET,
             "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1",
-            json={"values": [["1"], ["2"]]},
+            json={"values": [["column_one", "column_two"], ["1", "2"]]},
             status=200,
         )
 
