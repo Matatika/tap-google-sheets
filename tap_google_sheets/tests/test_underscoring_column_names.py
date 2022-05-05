@@ -23,12 +23,7 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
     @responses.activate()
     def test_underscoring_column_names(self):
 
-        self.column_response = {
-            "values": [
-                ["Column One", "Column Two"],
-                ["1", "1"]
-            ]
-        }
+        self.column_response = {"values": [["Column One", "Column Two"], ["1", "1"]]}
 
         responses.add(
             responses.POST,
@@ -69,4 +64,3 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
         self.assertEquals(
             test_utils.SINGER_MESSAGES[2].record, {"Column_One": "1", "Column_Two": "1"}
         )
-

@@ -23,12 +23,7 @@ class TestDiscoveredStreamName(unittest.TestCase):
     @responses.activate()
     def test_discovered_stream_name(self):
         """"""
-        self.column_response = {
-            "values": [
-                ["Column One", "Column Two"],
-                ["1", "1"]
-            ]
-        }
+        self.column_response = {"values": [["Column One", "Column Two"], ["1", "1"]]}
 
         responses.add(
             responses.POST,
