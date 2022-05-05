@@ -67,13 +67,17 @@ These settings expand into environment variables of:
 
 ## FAQ / Things to Note
 
-* Currently the tap supports sheets that have the column name in the first row.
+* You need to provide all the setting for this tap to run the it. These settings are used to generate the stream and schema for the tap to use from your Google Sheet.
 
-(The tap builds a usable json object up by using these column names)
+* Currently the tap supports sheets that have the column name in the first row. (The tap builds a usable json object up by using these column names).
 
-* The tap will skip all columns without a name
+* The tap will skip all columns without a name. (The tap builds a usable json object up by using these column names).
 
-* If syncing to a database that all the column names are unique.
+* If syncing to a database it will not respect duplicated column names. The last column with the same name will be the only one synced along with its data.
+
+* The tap will use your Google Sheet's name as output file or table name. It will lowercase the file name, and replace any spaces with underscores.
+
+* The tap will not lower case the column names, but will again replace any spaces with underscores.
 
 ### Loaders Tested
 
