@@ -36,6 +36,8 @@ The tap calls [Method: spreadsheets.values.get](https://developers.google.com/sh
 
 **Sheet ID**
 
+Your `sheet_id` is also required to run `--discover`, as running this will build the streams schema based on your google sheet.
+
 When you open your Google sheet, the url will look something like: 
 
 `https://docs.google.com/spreadsheets/d/abc123/edit#gid=0`
@@ -65,26 +67,30 @@ These settings expand into environment variables of:
 
 ## FAQ / Things to Note
 
-* Currently the tap supports sheets that have the column name in the first row.
+* You need to provide all the setting for this tap to run the it. These settings are used to generate the stream and schema for the tap to use from your Google Sheet.
 
-(The tap builds a usable json object up by using these column names)
+* Currently the tap supports sheets that have the column name in the first row. (The tap builds a usable json object up by using these column names).
 
-* The tap will skip all columns without a name
+* The tap will skip all columns without a name. (The tap builds a usable json object up by using these column names).
 
-* If syncing to a database that all the column names are unique.
+* If syncing to a database it will not respect duplicated column names. The last column with the same name will be the only one synced along with its data.
+
+* The tap will use your Google Sheet's name as output file or table name. It will lowercase the file name, and replace any spaces with underscores.
+
+* The tap will not lower case the column names, but will again replace any spaces with underscores.
 
 ### Loaders Tested
 
 - [target-jsonl](https://hub.meltano.com/targets/jsonl)
 - [target-csv](https://hub.meltano.com/targets/csv)
-- [target-postgres transferwise](https://hub.meltano.com/targets/postgres) - Bug - Produces tables for not selected streams, `files` and an extra `spreadsheets`.
-- [target-snowflake meltano](https://hub.meltano.com/targets/snowflake--meltano)
+- [target-postgres transferwise](https://hub.meltano.com/targets/postgres)
 
 
 ---
 
 ## Roadmap
 
+- [ ] Add `target-snowflake` variant Meltano support.
 - [ ] Add setting to optionally allow renaming the sheet stream name. (File or table name output by stream).
 - [ ] Add setting to optionally allow the selection of a range of data from a sheet. (Add an optional range setting).
 
@@ -116,6 +122,8 @@ tap-google-sheets --version
 tap-google-sheets --help
 tap-google-sheets --config CONFIG --discover > ./catalog.json
 ```
+
+Note: to run `--discover` you need to have set the required tap settings found [here](#configuration).
 
 ### Initialize your Development Environment
 
