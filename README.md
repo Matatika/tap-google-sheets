@@ -83,16 +83,17 @@ These settings expand into environment variables of:
 
 - [target-jsonl](https://hub.meltano.com/targets/jsonl)
 - [target-csv](https://hub.meltano.com/targets/csv)
-- [target-postgres transferwise](https://hub.meltano.com/targets/postgres)
+- [target-postgres transferwise variant](https://hub.meltano.com/targets/postgres)
+- [target-snowflake meltano variant (matatika fork)](https://hub.meltano.com/targets/snowflake--meltano) - Does not like numbers as column names
 
 
 ---
 
 ## Roadmap
 
-- [ ] Add `target-snowflake` variant Meltano support.
 - [ ] Add setting to optionally allow renaming the sheet stream name. (File or table name output by stream).
 - [ ] Add setting to optionally allow the selection of a range of data from a sheet. (Add an optional range setting).
+- [ ] Add setting to enable primary key, and select primary key(s) column(s).
 
 
 - [ ] Improve default behavior of a sheet with multiple columns of the same name and `target-postgres`.

@@ -82,11 +82,9 @@ class TapGoogleSheets(Tap):
 
         headings, *data = response.json()["values"]
 
-        properties = []
+        schema = th.PropertiesList()
         for column in headings:
             if column:
-                properties.append(
-                    th.Property(column.replace(" ", "_"), th.StringType())
-                )
+                schema.append(th.Property(column.replace(" ", "_"), th.StringType))
 
-        return th.PropertiesList(*properties).to_dict()
+        return schema.to_dict()
