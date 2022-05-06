@@ -55,7 +55,12 @@ class ProxyGoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta
             return False
         if not self.expires_in:
             return True
-        if self.expires_in > (datetime.now() - self.last_refreshed).total_seconds():
+        if (
+            self.expires_in
+            > (
+                datetime.now(self.last_refreshed.tzinfo) - self.last_refreshed
+            ).total_seconds()
+        ):
             return True
         return False
 
