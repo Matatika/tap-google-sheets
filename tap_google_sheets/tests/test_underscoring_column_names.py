@@ -1,4 +1,4 @@
-"""Tests standard tap features using the built-in SDK tests library."""
+"""Tests column names are returned underscored."""
 
 import unittest
 
@@ -10,7 +10,7 @@ from tap_google_sheets.tap import TapGoogleSheets
 
 
 class TestUnderscoringColumnNamed(unittest.TestCase):
-    """Test class for core tap tests."""
+    """Test class for testing column naming."""
 
     def setUp(self):
         self.mock_config = test_utils.MOCK_CONFIG
@@ -39,8 +39,8 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
         ),
         responses.add(
             responses.GET,
-            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1!1:1",
-            json={"values": [["Column_One", "Column_Two"]]},
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/!1:1",
+            json={"range": "Sheet1!1:1","values": [["Column_One", "Column_Two"]]},
             status=200,
         ),
         responses.add(

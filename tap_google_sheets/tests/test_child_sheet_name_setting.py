@@ -1,4 +1,4 @@
-"""Tests discovered stream names are returned underscored."""
+"""Tests tap setting child_sheet_name."""
 
 import unittest
 
@@ -9,11 +9,12 @@ import tap_google_sheets.tests.utils as test_utils
 from tap_google_sheets.tap import TapGoogleSheets
 
 
-class TestDiscoveredStreamName(unittest.TestCase):
-    """Test class for discovered stream name."""
+class TestChildSheetNameSetting(unittest.TestCase):
+    """Test class for tap setting child_sheet_name"""
 
     def setUp(self):
         self.mock_config = test_utils.MOCK_CONFIG
+        self.mock_config["child_sheet_name"] = 'Test Sheet'
 
         responses.reset()
         del test_utils.SINGER_MESSAGES[:]
@@ -39,13 +40,13 @@ class TestDiscoveredStreamName(unittest.TestCase):
         ),
         responses.add(
             responses.GET,
-            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/!1:1",
-            json={"range": "Sheet1!1:1", "values": [["Column One", "Column Two"]]},
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Test%20Sheet!1:1",
+            json={"range": "Test%20Sheet!1:1", "values": [["Column One", "Column Two"]]},
             status=200,
         ),
         responses.add(
             responses.GET,
-            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1",
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Test%20Sheet",
             json=self.column_response,
             status=200,
         )
@@ -54,5 +55,13 @@ class TestDiscoveredStreamName(unittest.TestCase):
 
         tap.sync_all()
 
-        # Assert the returned stream name is lowercase and underscored
-        self.assertEqual(tap.discover_streams()[0].name, "File_Name_One")
+        self.assertEqual(len(test_utils.SINGER_MESSAGES), 4)
+        self.assertIsInstance(test_utils.SINGER_MESSAGES[0], singer.SchemaMessage)
+        self.assertIsInstance(test_utils.SINGER_MESSAGES[1], singer.SchemaMessage)
+        self.assertIsInstance(test_utils.SINGER_MESSAGES[2], singer.RecordMessage)
+        self.assertIsInstance(test_utils.SINGER_MESSAGES[3], singer.StateMessage)
+
+        # Assert that data is sycned from the mocked response
+        self.assertEquals(
+            test_utils.SINGER_MESSAGES[2].record, {"Column_One": "1", "Column_Two": "1"}
+        )
