@@ -14,6 +14,7 @@ class TapGoogleSheets(Tap):
     """google_sheets tap class."""
 
     name = "tap-google-sheets"
+    sheet_name = None
 
     config_jsonschema = th.PropertiesList(
         th.Property(
@@ -38,13 +39,20 @@ class TapGoogleSheets(Tap):
         """Return a list of discovered streams."""
         streams: List[Stream] = []
 
-        stream_name = self.get_sheet_name()
-        stream_schema = self.get_schema()
+        stream_name = self.config.get("stream_name") or self.get_sheet_name()
+        stream_name = stream_name.replace(" ", "_")
+
+        google_sheet_data = self.get_sheet_data()
+
+        stream_schema = self.get_schema(google_sheet_data)
+
+        child_sheet_name = self.config.get("child_sheet_name") or self.get_first_visible_child_sheet_name(google_sheet_data)
 
         if stream_name:
             stream = GoogleSheetsStream(
                 tap=self, name=stream_name, schema=stream_schema
             )
+            stream.child_sheet_name = child_sheet_name
             stream.selected
             streams.append(stream)
 
@@ -56,31 +64,18 @@ class TapGoogleSheets(Tap):
             tap=self,
             name="config",
             schema={"one": "one"},
-            path="https://www.googleapis.com/drive/v2/files/" + self.config["sheet_id"],
+            path="https://www.googleapis.com/drive/v2/files/" + self.config["sheet_id"]
         )
 
         prepared_request = config_stream.prepare_request(None, None)
 
         response: requests.Response = config_stream._request(prepared_request, None)
 
-        return response.json().get("title").lower().replace(" ", "_")
+        return response.json().get("title")
 
-    def get_schema(self):
+    def get_schema(self, google_sheet_data: requests.Response):
         """Build the schema from the data returned by the google sheet."""
-        config_stream = GoogleSheetsBaseStream(
-            tap=self,
-            name="config",
-            schema={"not": "null"},
-            path="https://sheets.googleapis.com/v4/spreadsheets/"
-            + self.config["sheet_id"]
-            + "/values/Sheet1!1:1",
-        )
-
-        prepared_request = config_stream.prepare_request(None, None)
-
-        response: requests.Response = config_stream._request(prepared_request, None)
-
-        headings, *data = response.json()["values"]
+        headings, *data = google_sheet_data.json()["values"]
 
         schema = th.PropertiesList()
         for column in headings:
@@ -88,3 +83,27 @@ class TapGoogleSheets(Tap):
                 schema.append(th.Property(column.replace(" ", "_"), th.StringType))
 
         return schema.to_dict()
+
+    
+    def get_first_visible_child_sheet_name(self, google_sheet_data: requests.Response):
+        """Get the name of the first visible sheet in the google sheet."""
+        sheet_in_sheet_name = google_sheet_data.json()["range"].rsplit("!", 1)[0]
+
+        return sheet_in_sheet_name
+
+    def get_sheet_data(self):
+        """Get the data from the selected or first visible sheet in the google sheet."""
+        config_stream = GoogleSheetsBaseStream(
+            tap=self,
+            name="config",
+            schema={"not": "null"},
+            path="https://sheets.googleapis.com/v4/spreadsheets/"
+            + self.config["sheet_id"]
+            + "/values/" + self.config.get("child_sheet_name", "") + "!1:1",
+        )
+
+        prepared_request = config_stream.prepare_request(None, None)
+
+        response: requests.Response = config_stream._request(prepared_request, None)
+
+        return response

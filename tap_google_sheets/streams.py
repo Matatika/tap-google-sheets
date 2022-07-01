@@ -2,10 +2,18 @@
 
 from itertools import zip_longest
 from pathlib import Path
-from typing import Iterable
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Optional,
+    Union,
+)
 
 import requests
+from singer.schema import Schema
 from singer_sdk.helpers.jsonpath import extract_jsonpath
+from singer_sdk.plugin_base import PluginBase as TapBaseClass
 
 from tap_google_sheets.client import GoogleSheetsBaseStream
 
@@ -21,8 +29,7 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
     def path(self):
         """Set the path for the stream."""
         self.url_base = "https://sheets.googleapis.com/v4/spreadsheets/"
-        path = self.url_base + self.config.get("sheet_id") + "/"
-        path = path + "values/" + "Sheet1"  # self.config.get("sheet_name")
+        path = self.url_base + self.config["sheet_id"] + "/values/" + self.child_sheet_name
         return path
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
