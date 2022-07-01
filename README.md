@@ -54,6 +54,8 @@ Setting | Required | Type | Description |
 `oauth_credentials.client_secret` | Required | String | Your google client secret
 `oauth_credentials.refresh_token` | Required | String | Your google refresh token
 `sheet_id` | Required | String | Your target google sheet id
+`stream_name` | Optional | String | Optionailly rename the stream and output file or table from the tap
+`child_sheet_name` | Optional | String | Optionally choose a different sheet from your Google Sheet file
 
 ### Environment Variable
 
@@ -62,12 +64,16 @@ These settings expand into environment variables of:
 - `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_CLIENT_SECRET`
 - `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_REFRESH_TOKEN`
 - `TAP_GOOGLE_SHEETS_SHEET_ID`
+- `TAP_GOOGLE_SHEETS_STREAM_NAME`
+- `TAP_GOOGLE_SHEETS_CHILD_SHEET_NAME`
 
 ---
 
 ## FAQ / Things to Note
 
-* You need to provide all the setting for this tap to run the it. These settings are used to generate the stream and schema for the tap to use from your Google Sheet.
+* If you do not provide a `child_sheet_name`, the tap will find the first visible sheet in your Google Sheet and try to sync the data from there.
+
+* You need to provide all the required settings for this tap to run the it. These settings are used to generate the stream and schema for the tap to use from your Google Sheet.
 
 * Currently the tap supports sheets that have the column name in the first row. (The tap builds a usable json object up by using these column names).
 
@@ -75,9 +81,9 @@ These settings expand into environment variables of:
 
 * If syncing to a database it will not respect duplicated column names. The last column with the same name will be the only one synced along with its data.
 
-* The tap will use your Google Sheet's name as output file or table name. It will lowercase the file name, and replace any spaces with underscores.
+* The tap will use your Google Sheet's name as output file or table name unless you set a `stream_name`. It will replace any spaces with underscores.
 
-* The tap will not lower case the column names, but will again replace any spaces with underscores.
+* The tap will again replace any spaces in column names with underscores.
 
 ### Loaders Tested
 
@@ -91,7 +97,6 @@ These settings expand into environment variables of:
 
 ## Roadmap
 
-- [ ] Add setting to optionally allow renaming the sheet stream name. (File or table name output by stream).
 - [ ] Add setting to optionally allow the selection of a range of data from a sheet. (Add an optional range setting).
 - [ ] Add setting to enable primary key, and select primary key(s) column(s).
 
