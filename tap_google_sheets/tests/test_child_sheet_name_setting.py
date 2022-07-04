@@ -13,16 +13,20 @@ class TestChildSheetNameSetting(unittest.TestCase):
     """Test class for tap setting child_sheet_name"""
 
     def setUp(self):
-        self.mock_config = test_utils.MOCK_CONFIG
+        self.mock_config = {
+            "oauth_credentials": {
+                "client_id": "123",
+                "client_secret": "123",
+                "refresh_token": "123",
+            },
+            "sheet_id": "12345",
+        }
         self.mock_config["child_sheet_name"] = "Test Sheet"
 
         responses.reset()
         del test_utils.SINGER_MESSAGES[:]
 
         singer.write_message = test_utils.accumulate_singer_messages
-
-    def tearDown(self) -> None:
-        return super().tearDown()
 
     @responses.activate()
     def test_discovered_stream_name(self):
