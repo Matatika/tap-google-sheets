@@ -41,7 +41,8 @@ class TapGoogleSheets(Tap):
         th.Property(
             "child_sheet_name",
             th.StringType,
-            description="Optionally sync data from a different sheet in your Google Sheet",
+            description="Optionally sync data from a different sheet in"
+            + " your Google Sheet",
             required=False,
         ),
     ).to_dict()
