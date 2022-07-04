@@ -21,6 +21,9 @@ class TestChildSheetNameSetting(unittest.TestCase):
 
         singer.write_message = test_utils.accumulate_singer_messages
 
+    def tearDown(self) -> None:
+        return super().tearDown()
+
     @responses.activate()
     def test_discovered_stream_name(self):
         """"""
@@ -40,7 +43,7 @@ class TestChildSheetNameSetting(unittest.TestCase):
         ),
         responses.add(
             responses.GET,
-            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/!1:1",
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Test%20Sheet!1:1",
             json={
                 "range": "Test%20Sheet!1:1",
                 "values": [["Column One", "Column Two"]],
