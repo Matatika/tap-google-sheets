@@ -32,6 +32,18 @@ class TapGoogleSheets(Tap):
             description="Your google refresh token",
         ),
         th.Property("sheet_id", th.StringType, description="Your google sheet id"),
+        th.Property(
+            "output_name",
+            th.StringType,
+            description="Optionally rename your output file or table",
+            required=False,
+        ),
+        th.Property(
+            "child_sheet_name",
+            th.StringType,
+            description="Optionally sync data from a different sheet in your Google Sheet",
+            required=False,
+        ),
     ).to_dict()
 
     def discover_streams(self) -> List[Stream]:
