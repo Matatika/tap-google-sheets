@@ -1,4 +1,4 @@
-"""Tests discovered stream names are returned underscored."""
+"""Tests tap setting stream_name."""
 
 import unittest
 
@@ -9,11 +9,12 @@ import tap_google_sheets.tests.utils as test_utils
 from tap_google_sheets.tap import TapGoogleSheets
 
 
-class TestDiscoveredStreamName(unittest.TestCase):
-    """Test class for discovered stream name."""
+class TestOutputNameSetting(unittest.TestCase):
+    """Test class test_stream_name_setting"""
 
     def setUp(self):
         self.mock_config = test_utils.MOCK_CONFIG
+        self.mock_config["stream_name"] = "Test Output Name"
 
         responses.reset()
         del test_utils.SINGER_MESSAGES[:]
@@ -54,5 +55,5 @@ class TestDiscoveredStreamName(unittest.TestCase):
 
         tap.sync_all()
 
-        # Assert the returned stream name is lowercase and underscored
-        self.assertEqual(tap.discover_streams()[0].name, "File_Name_One")
+        # Assert returned stream name is the output_name setting and its underscored
+        self.assertEqual(tap.discover_streams()[0].name, "Test_Output_Name")

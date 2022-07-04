@@ -35,8 +35,8 @@ class TestCore(unittest.TestCase):
         ),
         responses.add(
             responses.GET,
-            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1!1:1",
-            json={"values": [["column_one", "column_two"]]},
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/!1:1",
+            json={"range": "Sheet1!1:1", "values": [["column_one", "column_two"]]},
             status=200,
         )
 
@@ -63,14 +63,17 @@ class TestCore(unittest.TestCase):
         ),
         responses.add(
             responses.GET,
-            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1!1:1",
-            json={"values": [["column_one", "column_two"]]},
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/!1:1",
+            json={"range": "Sheet1!1:1", "values": [["column_one", "column_two"]]},
             status=200,
         ),
         responses.add(
             responses.GET,
             "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1",
-            json={"values": [["column_one", "column_two"], ["1", "2"]]},
+            json={
+                "range": "Sheet1",
+                "values": [["column_one", "column_two"], ["1", "2"]],
+            },
             status=200,
         )
 

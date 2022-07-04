@@ -3,25 +3,35 @@ send_anonymous_usage_stats: true
 project_id: 04da77a3-af12-49a4-b9bf-3c22845918ba
 plugins:
   extractors:
-  - name: tap-google-sheets
-    namespace: tap_google_sheets
-    pip_url: -e .
-    capabilities:
-    - state
-    - catalog
-    - discover
-    settings:
-    - name: oauth_credentials.client_id
-      kind: password
-    - name: oauth_credentials.client_secret
-      kind: password
-    - name: oauth_credentials.refresh_token
-      kind: password
-    - name: sheet_id
+    - name: tap-google-sheets
+      namespace: tap_google_sheets
+      pip_url: -e .
+      capabilities:
+        - state
+        - catalog
+        - discover
+      select:
+        - spreadsheet.*
+      settings:
+        - name: oauth_credentials.client_id
+          kind: password
+        - name: oauth_credentials.client_secret
+          kind: password
+        - name: oauth_credentials.refresh_token
+          kind: password
+        - name: sheet_id
+        - name: stream_name
+        - name: child_sheet_name
   loaders:
-  - name: target-jsonl
-    variant: andyh1203
-    pip_url: target-jsonl
-  - name: target-postgres
-    variant: transferwise
-    pip_url: pipelinewise-target-postgres
+    - name: target-jsonl
+      variant: andyh1203
+      pip_url: target-jsonl
+    - name: target-postgres
+      variant: transferwise
+      pip_url: pipelinewise-target-postgres
+    - name: target-csv
+      variant: hotgluexyz
+      pip_url: git+https://github.com/hotgluexyz/target-csv.git@0.3.3
+    - name: target-snowflake
+      variant: meltano
+      pip_url: git+https://github.com/Matatika/target-snowflake@v0.1.0

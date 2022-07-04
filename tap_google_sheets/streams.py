@@ -15,14 +15,16 @@ SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 class GoogleSheetsStream(GoogleSheetsBaseStream):
     """Google sheets stream."""
 
+    child_sheet_name = None
     primary_key = None
 
     @property
     def path(self):
         """Set the path for the stream."""
         self.url_base = "https://sheets.googleapis.com/v4/spreadsheets/"
-        path = self.url_base + self.config.get("sheet_id") + "/"
-        path = path + "values/" + "Sheet1"  # self.config.get("sheet_name")
+        path = (
+            self.url_base + self.config["sheet_id"] + "/values/" + self.child_sheet_name
+        )
         return path
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:

@@ -1,4 +1,4 @@
-"""Tests column names are returned underscored."""
+"""Tests tap setting child_sheet_name."""
 
 import unittest
 
@@ -9,11 +9,19 @@ import tap_google_sheets.tests.utils as test_utils
 from tap_google_sheets.tap import TapGoogleSheets
 
 
-class TestUnderscoringColumnNamed(unittest.TestCase):
-    """Test class for testing column naming."""
+class TestChildSheetNameSetting(unittest.TestCase):
+    """Test class for tap setting child_sheet_name"""
 
     def setUp(self):
-        self.mock_config = test_utils.MOCK_CONFIG
+        self.mock_config = {
+            "oauth_credentials": {
+                "client_id": "123",
+                "client_secret": "123",
+                "refresh_token": "123",
+            },
+            "sheet_id": "12345",
+        }
+        self.mock_config["child_sheet_name"] = "Test Sheet"
 
         responses.reset()
         del test_utils.SINGER_MESSAGES[:]
@@ -21,8 +29,8 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
         singer.write_message = test_utils.accumulate_singer_messages
 
     @responses.activate()
-    def test_underscoring_column_names(self):
-
+    def test_discovered_stream_name(self):
+        """"""
         self.column_response = {"values": [["Column One", "Column Two"], ["1", "1"]]}
 
         responses.add(
@@ -34,18 +42,22 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
         responses.add(
             responses.GET,
             "https://www.googleapis.com/drive/v2/files/12345",
-            json={"title": "file_name"},
+            json={"title": "File Name One"},
             status=200,
         ),
         responses.add(
             responses.GET,
-            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/!1:1",
-            json={"range": "Sheet1!1:1", "values": [["Column_One", "Column_Two"]]},
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/"
+            + "Test%20Sheet!1:1",
+            json={
+                "range": "Test%20Sheet!1:1",
+                "values": [["Column One", "Column Two"]],
+            },
             status=200,
         ),
         responses.add(
             responses.GET,
-            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1",
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Test%20Sheet",
             json=self.column_response,
             status=200,
         )
@@ -60,7 +72,7 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
         self.assertIsInstance(test_utils.SINGER_MESSAGES[2], singer.RecordMessage)
         self.assertIsInstance(test_utils.SINGER_MESSAGES[3], singer.StateMessage)
 
-        # Assert that column names have been underscored
+        # Assert that data is sycned from the mocked response
         self.assertEquals(
             test_utils.SINGER_MESSAGES[2].record, {"Column_One": "1", "Column_Two": "1"}
         )
