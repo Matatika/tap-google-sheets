@@ -14,7 +14,7 @@ class TestChildSheetNameSetting(unittest.TestCase):
 
     def setUp(self):
         self.mock_config = test_utils.MOCK_CONFIG
-        self.mock_config["child_sheet_name"] = 'Test Sheet'
+        self.mock_config["child_sheet_name"] = "Test Sheet"
 
         responses.reset()
         del test_utils.SINGER_MESSAGES[:]
@@ -40,8 +40,12 @@ class TestChildSheetNameSetting(unittest.TestCase):
         ),
         responses.add(
             responses.GET,
-            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Test%20Sheet!1:1",
-            json={"range": "Test%20Sheet!1:1", "values": [["Column One", "Column Two"]]},
+            "https://sheets.googleapis.com/v4/spreadsheets/12345/values/"
+            + "Test%20Sheet!1:1",
+            json={
+                "range": "Test%20Sheet!1:1",
+                "values": [["Column One", "Column Two"]],
+            },
             status=200,
         ),
         responses.add(

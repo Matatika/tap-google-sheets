@@ -14,7 +14,7 @@ class TestOutputNameSetting(unittest.TestCase):
 
     def setUp(self):
         self.mock_config = test_utils.MOCK_CONFIG
-        self.mock_config["stream_name"] = 'Test Output Name'
+        self.mock_config["stream_name"] = "Test Output Name"
 
         responses.reset()
         del test_utils.SINGER_MESSAGES[:]
@@ -55,5 +55,5 @@ class TestOutputNameSetting(unittest.TestCase):
 
         tap.sync_all()
 
-        # Assert the returned stream name is the output_name setting and that its underscored
+        # Assert returned stream name is the output_name setting and its underscored
         self.assertEqual(tap.discover_streams()[0].name, "Test_Output_Name")

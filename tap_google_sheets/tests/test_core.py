@@ -70,7 +70,10 @@ class TestCore(unittest.TestCase):
         responses.add(
             responses.GET,
             "https://sheets.googleapis.com/v4/spreadsheets/12345/values/Sheet1",
-            json={"range": "Sheet1", "values": [["column_one", "column_two"], ["1", "2"]]},
+            json={
+                "range": "Sheet1",
+                "values": [["column_one", "column_two"], ["1", "2"]],
+            },
             status=200,
         )
 
