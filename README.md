@@ -114,7 +114,7 @@ Currently if have duplicate column names, a database will either:
 Use pip to install a release from GitHub.
 
 ```bash
-pip install git+https://github.com/Matatika/tap-shopify@vx.x.x
+pip install git+https://github.com/Matatika/tap-google-sheets@vx.x.x
 ```
 
 ## Usage
