@@ -50,7 +50,7 @@ class TestKeyPropertiesSetting(unittest.TestCase):
 
         tap = TapGoogleSheets(config=self.mock_config)
 
-        # Assert that the key_properties in a stream is equal to the setting key_properties
+        # Assert that key_properties in tap streams equal to the setting key_properties
         for stream in tap.catalog_dict.get("streams"):
             self.assertEquals(
                 stream.get("key_properties"), tap.config.get("key_properties")
