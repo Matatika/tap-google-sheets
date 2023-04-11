@@ -22,7 +22,6 @@ class TestIgnoringUnnamedColumns(unittest.TestCase):
 
     @responses.activate()
     def test_ignoring_unnamed_columns(self):
-
         self.missing_column_response = {
             "values": [
                 ["Column_One", "", "Column_Two"],
