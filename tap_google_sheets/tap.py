@@ -45,6 +45,12 @@ class TapGoogleSheets(Tap):
             + " your Google Sheet",
             required=False,
         ),
+        th.Property(
+            "key_properties",
+            th.ArrayType(th.StringType),
+            description="Optionally choose one or more primary key columns",
+            required=False,
+        ),
     ).to_dict()
 
     def discover_streams(self) -> List[Stream]:
@@ -53,6 +59,7 @@ class TapGoogleSheets(Tap):
 
         stream_name = self.config.get("stream_name") or self.get_sheet_name()
         stream_name = stream_name.replace(" ", "_")
+        key_properties = self.config.get("key_properties", [])
 
         google_sheet_data = self.get_sheet_data()
 
@@ -68,6 +75,7 @@ class TapGoogleSheets(Tap):
             )
             stream.child_sheet_name = child_sheet_name
             stream.selected
+            stream.primary_keys = key_properties
             streams.append(stream)
 
         return streams
