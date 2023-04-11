@@ -52,5 +52,6 @@ class TestKeyPropertiesSetting(unittest.TestCase):
 
         # Assert that the key_properties in a stream is equal to the setting key_properties
         for stream in tap.catalog_dict.get("streams"):
-            self.assertEquals(stream.get("key_properties"), tap.config.get("key_properties"))
-        
+            self.assertEquals(
+                stream.get("key_properties"), tap.config.get("key_properties")
+            )

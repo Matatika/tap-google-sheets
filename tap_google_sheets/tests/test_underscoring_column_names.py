@@ -22,7 +22,6 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
 
     @responses.activate()
     def test_underscoring_column_names(self):
-
         self.column_response = {"values": [["Column One", "Column Two"], ["1", "1"]]}
 
         responses.add(
