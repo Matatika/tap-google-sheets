@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "tap-google-sheets"
-version = "0.0.1"
+version = "0.3.0"
 description = "`tap-google-sheets` is a Singer tap for google_sheets, built with the Meltano SDK for Singer Taps."
 authors = ["Daniel Walker"]
 keywords = [
     "ELT",
     "google_sheets",
 ]
-license = "Apache 2.0"
+license = "GNU Affero General Public License v3.0"
 
 [tool.poetry.dependencies]
 python = "<3.11,>=3.7.1"
