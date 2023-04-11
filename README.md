@@ -56,6 +56,7 @@ Setting | Required | Type | Description |
 `sheet_id` | Required | String | Your target google sheet id
 `stream_name` | Optional | String | Optionailly rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String | Optionally choose a different sheet from your Google Sheet file
+`key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
 
 ### Environment Variable
 
@@ -66,6 +67,7 @@ These settings expand into environment variables of:
 - `TAP_GOOGLE_SHEETS_SHEET_ID`
 - `TAP_GOOGLE_SHEETS_STREAM_NAME`
 - `TAP_GOOGLE_SHEETS_CHILD_SHEET_NAME`
+- `TAP_GOOGLE_SHEETS_KEY_PROPERTIES`
 
 ---
 
@@ -85,6 +87,8 @@ These settings expand into environment variables of:
 
 * The tap will again replace any spaces in column names with underscores.
 
+* When using the `key_properties` setting, you must choose columns with no null values.
+
 ### Loaders Tested
 
 - [target-jsonl](https://hub.meltano.com/targets/jsonl)
@@ -98,8 +102,6 @@ These settings expand into environment variables of:
 ## Roadmap
 
 - [ ] Add setting to optionally allow the selection of a range of data from a sheet. (Add an optional range setting).
-- [ ] Add setting to enable primary key, and select primary key(s) column(s).
-
 
 - [ ] Improve default behavior of a sheet with multiple columns of the same name and `target-postgres`.
 
