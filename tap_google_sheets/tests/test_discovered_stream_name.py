@@ -3,7 +3,7 @@
 import unittest
 
 import responses
-import singer
+import singer_sdk._singerlib as singer
 
 import tap_google_sheets.tests.utils as test_utils
 from tap_google_sheets.tap import TapGoogleSheets

@@ -40,7 +40,7 @@ class TestCore(unittest.TestCase):
             status=200,
         )
 
-        catalog = TapGoogleSheets(self.mock_config).discover_streams()
+        catalog = TapGoogleSheets(config=self.mock_config).discover_streams()
 
         # expect valid catalog to be discovered
         self.assertEqual(len(catalog), 1, "Total streams from default catalog")
