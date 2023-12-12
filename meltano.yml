@@ -22,6 +22,7 @@ plugins:
         - name: sheet_id
         - name: stream_name
         - name: child_sheet_name
+        - name: sheets
   loaders:
     - name: target-jsonl
       variant: andyh1203

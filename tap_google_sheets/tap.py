@@ -15,6 +15,29 @@ class TapGoogleSheets(Tap):
 
     name = "tap-google-sheets"
 
+    per_sheet_config = th.ObjectType(
+        th.Property("sheet_id", th.StringType, description="Your google sheet id"),
+        th.Property(
+            "output_name",
+            th.StringType,
+            description="Optionally rename your output file or table",
+            required=False,
+        ),
+        th.Property(
+            "child_sheet_name",
+            th.StringType,
+            description="Optionally sync data from a different sheet in"
+                        + " your Google Sheet",
+            required=False,
+        ),
+        th.Property(
+            "key_properties",
+            th.ArrayType(th.StringType),
+            description="Optionally choose one or more primary key columns",
+            required=False,
+        ),
+    )
+
     config_jsonschema = th.PropertiesList(
         th.Property(
             "oauth_credentials.client_id",
@@ -31,62 +54,57 @@ class TapGoogleSheets(Tap):
             th.StringType,
             description="Your google refresh token",
         ),
-        th.Property("sheet_id", th.StringType, description="Your google sheet id"),
         th.Property(
-            "output_name",
-            th.StringType,
-            description="Optionally rename your output file or table",
+            "sheets",
             required=False,
-        ),
-        th.Property(
-            "child_sheet_name",
-            th.StringType,
-            description="Optionally sync data from a different sheet in"
-            + " your Google Sheet",
-            required=False,
-        ),
-        th.Property(
-            "key_properties",
-            th.ArrayType(th.StringType),
-            description="Optionally choose one or more primary key columns",
-            required=False,
-        ),
-    ).to_dict()
+            description="The list of configs for each sheet/stream.",
+            wrapped=th.ArrayType(per_sheet_config),
+        )
+    )
+
+    for prop in per_sheet_config.wrapped.values():
+        # raise Exception(prop.name)
+        config_jsonschema.append(prop)
+
+    config_jsonschema = config_jsonschema.to_dict()
 
     def discover_streams(self) -> List[Stream]:
         """Return a list of discovered streams."""
         streams: List[Stream] = []
 
-        stream_name = self.config.get("stream_name") or self.get_sheet_name()
-        stream_name = stream_name.replace(" ", "_")
-        key_properties = self.config.get("key_properties", [])
+        sheets = self.config.get("sheets") or [self.config]
+        for stream_config in sheets:
+            stream_name = stream_config.get("stream_name") or self.get_sheet_name()
+            stream_name = stream_name.replace(" ", "_")
+            key_properties = stream_config.get("key_properties", [])
 
-        google_sheet_data = self.get_sheet_data()
+            google_sheet_data = self.get_sheet_data(stream_config)
 
-        stream_schema = self.get_schema(google_sheet_data)
+            stream_schema = self.get_schema(google_sheet_data)
 
-        child_sheet_name = self.config.get(
-            "child_sheet_name"
-        ) or self.get_first_visible_child_sheet_name(google_sheet_data)
+            child_sheet_name = self.config.get(
+                "child_sheet_name"
+            ) or self.get_first_visible_child_sheet_name(google_sheet_data)
 
-        if stream_name:
-            stream = GoogleSheetsStream(
-                tap=self, name=stream_name, schema=stream_schema
-            )
-            stream.child_sheet_name = child_sheet_name
-            stream.selected
-            stream.primary_keys = key_properties
-            streams.append(stream)
+            if stream_name:
+                stream = GoogleSheetsStream(
+                    tap=self, name=stream_name, schema=stream_schema
+                )
+                stream.child_sheet_name = child_sheet_name
+                stream.selected
+                stream.primary_keys = key_properties
+                stream.stream_config = stream_config
+                streams.append(stream)
 
         return streams
 
-    def get_sheet_name(self):
+    def get_sheet_name(self, stream_config):
         """Get the name of the spreadsheet."""
         config_stream = GoogleSheetsBaseStream(
             tap=self,
             name="config",
             schema={"one": "one"},
-            path="https://www.googleapis.com/drive/v2/files/" + self.config["sheet_id"],
+            path="https://www.googleapis.com/drive/v2/files/" + stream_config["sheet_id"],
         )
 
         prepared_request = config_stream.prepare_request(None, None)
@@ -112,16 +130,16 @@ class TapGoogleSheets(Tap):
 
         return sheet_in_sheet_name
 
-    def get_sheet_data(self):
+    def get_sheet_data(self, stream_config):
         """Get the data from the selected or first visible sheet in the google sheet."""
         config_stream = GoogleSheetsBaseStream(
             tap=self,
             name="config",
             schema={"not": "null"},
             path="https://sheets.googleapis.com/v4/spreadsheets/"
-            + self.config["sheet_id"]
+            + stream_config["sheet_id"]
             + "/values/"
-            + self.config.get("child_sheet_name", "")
+            + stream_config.get("child_sheet_name", "")
             + "!1:1",
         )
 

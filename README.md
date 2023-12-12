@@ -56,11 +56,21 @@ Your `sheet_id` are the characters after `spreadsheets/d/`, so in this case woul
 
 ### Credentials
 
+Setting | Required | Type             | Description |
+------- | -------- |------------------| ----------- |
+`oauth_credentials.client_id` | Required | String           | Your google client id
+`oauth_credentials.client_secret` | Required | String           | Your google client secret
+`oauth_credentials.refresh_token` | Required | String           | Your google refresh token
+`sheet_id` | Required | String           | Your target google sheet id
+`stream_name` | Optional | String           | Optionailly rename the stream and output file or table from the tap
+`child_sheet_name` | Optional | String           | Optionally choose a different sheet from your Google Sheet file
+`key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
+`sheets` | Optional | Array of Objects | Optionally provide a list of configs for each sheet/stream. See "Per Sheet Config" below. Overrides the `sheet_id` provided at the root level.
+
+### Per Sheet Config
+
 Setting | Required | Type | Description |
 ------- | -------- | ---- | ----------- |
-`oauth_credentials.client_id` | Required | String | Your google client id
-`oauth_credentials.client_secret` | Required | String | Your google client secret
-`oauth_credentials.refresh_token` | Required | String | Your google refresh token
 `sheet_id` | Required | String | Your target google sheet id
 `stream_name` | Optional | String | Optionailly rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String | Optionally choose a different sheet from your Google Sheet file
@@ -76,6 +86,7 @@ These settings expand into environment variables of:
 - `TAP_GOOGLE_SHEETS_STREAM_NAME`
 - `TAP_GOOGLE_SHEETS_CHILD_SHEET_NAME`
 - `TAP_GOOGLE_SHEETS_KEY_PROPERTIES`
+- `TAP_GOOGLE_SHEETS_SHEETS`
 
 ---
 
@@ -96,6 +107,8 @@ These settings expand into environment variables of:
 * The tap will again replace any spaces in column names with underscores.
 
 * When using the `key_properties` setting, you must choose columns with no null values.
+
+* You can extract multiple sheets using the `sheets` config, which is just an array containing configurable properties for each item. Doing so will ignore any sheet config defined by the root level `sheet_id`, `stream_name`, `child_sheet_name`, `key_properties` properties.
 
 ### Loaders Tested
 
