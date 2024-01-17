@@ -103,7 +103,9 @@ class TapGoogleSheets(Tap):
         schema = th.PropertiesList()
         for column in headings:
             if column:
-                schema.append(th.Property(re.sub("\s+", "_", column.strip()), th.StringType))
+                schema.append(
+                    th.Property(re.sub("\s+", "_", column.strip()), th.StringType)
+                )
 
         return schema.to_dict()
 
