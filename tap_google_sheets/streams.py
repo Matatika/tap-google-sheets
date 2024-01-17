@@ -38,7 +38,7 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
             data_rows.append(
                 dict(
                     [
-                        (re.sub("\s+", "_", h.strip()), v or "")
+                        (re.sub(r"\s+", "_", h.strip()), v or "")
                         for m, h, v in zip_longest(mask, headings, values)
                         if m
                     ]

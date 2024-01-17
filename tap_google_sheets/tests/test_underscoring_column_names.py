@@ -1,6 +1,5 @@
 """Tests column names are returned underscored."""
 
-import json
 import unittest
 
 import responses
