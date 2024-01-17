@@ -62,7 +62,7 @@ Setting | Required | Type | Description |
 `oauth_credentials.client_secret` | Required | String | Your google client secret
 `oauth_credentials.refresh_token` | Required | String | Your google refresh token
 `sheet_id` | Required | String | Your target google sheet id
-`stream_name` | Optional | String | Optionailly rename the stream and output file or table from the tap
+`output_name` | Optional | String | Optionailly rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String | Optionally choose a different sheet from your Google Sheet file
 `key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
 
@@ -73,7 +73,7 @@ These settings expand into environment variables of:
 - `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_CLIENT_SECRET`
 - `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_REFRESH_TOKEN`
 - `TAP_GOOGLE_SHEETS_SHEET_ID`
-- `TAP_GOOGLE_SHEETS_STREAM_NAME`
+- `TAP_GOOGLE_SHEETS_OUTPUT_NAME`
 - `TAP_GOOGLE_SHEETS_CHILD_SHEET_NAME`
 - `TAP_GOOGLE_SHEETS_KEY_PROPERTIES`
 
@@ -91,7 +91,7 @@ These settings expand into environment variables of:
 
 * If syncing to a database it will not respect duplicated column names. The last column with the same name will be the only one synced along with its data.
 
-* The tap will use your Google Sheet's name as output file or table name unless you set a `stream_name`. It will replace any spaces with underscores.
+* The tap will use your Google Sheet's name as output file or table name unless you set an `output_name`. It will replace any spaces with underscores.
 
 * The tap will again replace any spaces in column names with underscores.
 

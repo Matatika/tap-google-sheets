@@ -57,7 +57,7 @@ class TapGoogleSheets(Tap):
         """Return a list of discovered streams."""
         streams: List[Stream] = []
 
-        stream_name = self.config.get("stream_name") or self.get_sheet_name()
+        stream_name = self.config.get("output_name") or self.get_sheet_name()
         stream_name = stream_name.replace(" ", "_")
         key_properties = self.config.get("key_properties", [])
 
