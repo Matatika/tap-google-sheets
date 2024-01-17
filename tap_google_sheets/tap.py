@@ -1,5 +1,6 @@
 """google_sheets tap class."""
 
+import re
 from typing import List
 
 import requests
@@ -102,7 +103,9 @@ class TapGoogleSheets(Tap):
         schema = th.PropertiesList()
         for column in headings:
             if column:
-                schema.append(th.Property(column.replace(" ", "_"), th.StringType))
+                schema.append(
+                    th.Property(re.sub(r"\s+", "_", column.strip()), th.StringType)
+                )
 
         return schema.to_dict()
 

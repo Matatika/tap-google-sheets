@@ -22,7 +22,21 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
 
     @responses.activate()
     def test_underscoring_column_names(self):
-        self.column_response = {"values": [["Column One", "Column Two"], ["1", "1"]]}
+        self.column_response = {
+            "values": [
+                [
+                    "Column One",
+                    " Column Two",
+                    "   Column Three   ",
+                    "Column\nFour",
+                    "Column  \n\tFive\n\n\t  ",
+                    "Multi Column One",
+                    "  Multi Column  Two ",
+                    "\tMulti \r\nColumn\f\vThree",
+                ],
+                ["1"] * 8,
+            ]
+        }
 
         responses.add(
             responses.POST,
@@ -39,7 +53,7 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
         responses.add(
             responses.GET,
             "https://sheets.googleapis.com/v4/spreadsheets/12345/values/!1:1",
-            json={"range": "Sheet1!1:1", "values": [["Column_One", "Column_Two"]]},
+            json={"range": "Sheet1!1:1", "values": [self.column_response["values"][0]]},
             status=200,
         ),
         responses.add(
@@ -61,5 +75,15 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
 
         # Assert that column names have been underscored
         self.assertEquals(
-            test_utils.SINGER_MESSAGES[2].record, {"Column_One": "1", "Column_Two": "1"}
+            test_utils.SINGER_MESSAGES[2].record,
+            {
+                "Column_One": "1",
+                "Column_Two": "1",
+                "Column_Three": "1",
+                "Column_Four": "1",
+                "Column_Five": "1",
+                "Multi_Column_One": "1",
+                "Multi_Column_Two": "1",
+                "Multi_Column_Three": "1",
+            },
         )
