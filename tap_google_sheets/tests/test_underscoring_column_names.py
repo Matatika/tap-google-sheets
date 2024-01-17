@@ -1,9 +1,9 @@
 """Tests column names are returned underscored."""
 
+import json
 import unittest
 
 import responses
-import json
 import singer_sdk._singerlib as singer
 
 import tap_google_sheets.tests.utils as test_utils

@@ -1,9 +1,9 @@
 """google_sheets tap class."""
 
+import re
 from typing import List
 
 import requests
-import re
 from singer_sdk import Stream, Tap
 from singer_sdk import typing as th
 

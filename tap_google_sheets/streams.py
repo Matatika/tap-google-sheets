@@ -1,11 +1,11 @@
 """Stream type classes for tap-google-sheets."""
 
+import re
 from itertools import zip_longest
 from pathlib import Path
 from typing import Iterable
 
 import requests
-import re
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 
 from tap_google_sheets.client import GoogleSheetsBaseStream
