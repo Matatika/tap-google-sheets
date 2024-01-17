@@ -7,7 +7,7 @@ from typing import Optional
 import requests
 from singer_sdk.authenticators import OAuthAuthenticator, SingletonMeta
 from singer_sdk.helpers._util import utc_now
-from singer_sdk.streams import Stream as RESTStreamBase
+from singer_sdk.streams import RESTStream
 
 
 class GoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta):
@@ -30,7 +30,7 @@ class ProxyGoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta
 
     def __init__(
         self,
-        stream: RESTStreamBase,
+        stream: RESTStream,
         auth_endpoint=None,
         oauth_scopes=None,
         auth_headers=None,
