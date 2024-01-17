@@ -34,9 +34,10 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
                     "Multi Column One",
                     "  Multi Column  Two ",
                     "\tMulti \r\nColumn\f\vThree",
-                ], ["1"] * 8
-                ]
-            }
+                ],
+                ["1"] * 8,
+            ]
+        }
 
         responses.add(
             responses.POST,
