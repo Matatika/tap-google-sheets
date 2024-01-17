@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Iterable
 
 import requests
+import re
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 
 from tap_google_sheets.client import GoogleSheetsBaseStream
@@ -37,7 +38,7 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
             data_rows.append(
                 dict(
                     [
-                        (h.replace(" ", "_"), v or "")
+                        (re.sub("\s+", "_", h.strip()), v or "")
                         for m, h, v in zip_longest(mask, headings, values)
                         if m
                     ]

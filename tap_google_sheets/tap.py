@@ -3,6 +3,7 @@
 from typing import List
 
 import requests
+import re
 from singer_sdk import Stream, Tap
 from singer_sdk import typing as th
 
@@ -102,7 +103,7 @@ class TapGoogleSheets(Tap):
         schema = th.PropertiesList()
         for column in headings:
             if column:
-                schema.append(th.Property(column.replace(" ", "_"), th.StringType))
+                schema.append(th.Property(re.sub("\s+", "_", column.strip()), th.StringType))
 
         return schema.to_dict()
 
