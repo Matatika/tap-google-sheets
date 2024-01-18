@@ -1,6 +1,9 @@
 version: 1
 send_anonymous_usage_stats: true
 project_id: 04da77a3-af12-49a4-b9bf-3c22845918ba
+default_environment: test
+environments:
+- name: test
 plugins:
   extractors:
     - name: tap-google-sheets
@@ -22,6 +25,8 @@ plugins:
         - name: sheet_id
         - name: output_name
         - name: child_sheet_name
+        - name: key_properties
+          kind: array
         - name: sheets
   loaders:
     - name: target-jsonl
