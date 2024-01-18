@@ -20,7 +20,7 @@ plugins:
         - name: oauth_credentials.refresh_token
           kind: password
         - name: sheet_id
-        - name: stream_name
+        - name: output_name
         - name: child_sheet_name
         - name: sheets
   loaders:

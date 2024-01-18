@@ -1,5 +1,6 @@
 """Stream type classes for tap-google-sheets."""
 
+import re
 from itertools import zip_longest
 from pathlib import Path
 from typing import Iterable
@@ -38,7 +39,7 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
             data_rows.append(
                 dict(
                     [
-                        (h.replace(" ", "_"), v or "")
+                        (re.sub(r"\s+", "_", h.strip()), v or "")
                         for m, h, v in zip_longest(mask, headings, values)
                         if m
                     ]

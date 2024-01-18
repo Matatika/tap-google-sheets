@@ -3,7 +3,7 @@
 
 name: Test tap-google-sheets
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   linting:

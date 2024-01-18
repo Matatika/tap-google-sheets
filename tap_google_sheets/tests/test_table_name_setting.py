@@ -1,4 +1,4 @@
-"""Tests tap setting stream_name."""
+"""Tests tap setting output_name."""
 
 import unittest
 
@@ -10,11 +10,11 @@ from tap_google_sheets.tap import TapGoogleSheets
 
 
 class TestOutputNameSetting(unittest.TestCase):
-    """Test class test_stream_name_setting"""
+    """Test class test_output_name_setting"""
 
     def setUp(self):
         self.mock_config = test_utils.MOCK_CONFIG
-        self.mock_config["stream_name"] = "Test Output Name"
+        self.mock_config["output_name"] = "Test Output Name"
 
         responses.reset()
         del test_utils.SINGER_MESSAGES[:]
@@ -22,7 +22,7 @@ class TestOutputNameSetting(unittest.TestCase):
         singer.write_message = test_utils.accumulate_singer_messages
 
     @responses.activate()
-    def test_discovered_stream_name(self):
+    def test_output_name(self):
         """"""
         self.column_response = {"values": [["Column One", "Column Two"], ["1", "1"]]}
 

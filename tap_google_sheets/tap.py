@@ -1,5 +1,6 @@
 """google_sheets tap class."""
 
+import re
 from typing import List
 
 import requests
@@ -74,7 +75,7 @@ class TapGoogleSheets(Tap):
 
         sheets = self.config.get("sheets") or [self.config]
         for stream_config in sheets:
-            stream_name = stream_config.get("stream_name") or self.get_sheet_name()
+            stream_name = stream_config.get("output_name") or self.get_sheet_name()
             stream_name = stream_name.replace(" ", "_")
             key_properties = stream_config.get("key_properties", [])
 
@@ -120,7 +121,9 @@ class TapGoogleSheets(Tap):
         schema = th.PropertiesList()
         for column in headings:
             if column:
-                schema.append(th.Property(column.replace(" ", "_"), th.StringType))
+                schema.append(
+                    th.Property(re.sub(r"\s+", "_", column.strip()), th.StringType)
+                )
 
         return schema.to_dict()
 
