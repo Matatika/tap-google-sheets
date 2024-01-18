@@ -1,4 +1,4 @@
-"""Tests tap setting stream_name."""
+"""Tests tap setting output_name."""
 
 import unittest
 
