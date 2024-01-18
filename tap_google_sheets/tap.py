@@ -27,8 +27,9 @@ class TapGoogleSheets(Tap):
         th.Property(
             "child_sheet_name",
             th.StringType,
-            description="Optionally sync data from a different sheet in"
-                        + " your Google Sheet",
+            description=(
+                "Optionally sync data from a different sheet in your Google Sheet"
+            ),
             required=False,
         ),
         th.Property(
@@ -39,7 +40,7 @@ class TapGoogleSheets(Tap):
         ),
     )
 
-    config_jsonschema = th.PropertiesList(
+    base_config = th.PropertiesList(
         th.Property(
             "oauth_credentials.client_id",
             th.StringType,
@@ -60,14 +61,14 @@ class TapGoogleSheets(Tap):
             required=False,
             description="The list of configs for each sheet/stream.",
             wrapped=th.ArrayType(per_sheet_config),
-        )
+        ),
     )
 
     for prop in per_sheet_config.wrapped.values():
         # raise Exception(prop.name)
-        config_jsonschema.append(prop)
+        base_config.append(prop)
 
-    config_jsonschema = config_jsonschema.to_dict()
+    config_jsonschema = base_config.to_dict()
 
     def discover_streams(self) -> List[Stream]:
         """Return a list of discovered streams."""
@@ -75,7 +76,9 @@ class TapGoogleSheets(Tap):
 
         sheets = self.config.get("sheets") or [self.config]
         for stream_config in sheets:
-            stream_name = stream_config.get("output_name") or self.get_sheet_name(stream_config)
+            stream_name = stream_config.get("output_name") or self.get_sheet_name(
+                stream_config
+            )
             stream_name = stream_name.replace(" ", "_")
             key_properties = stream_config.get("key_properties", [])
 
@@ -105,7 +108,8 @@ class TapGoogleSheets(Tap):
             tap=self,
             name="config",
             schema={"one": "one"},
-            path="https://www.googleapis.com/drive/v2/files/" + stream_config["sheet_id"],
+            path="https://www.googleapis.com/drive/v2/files/"
+            + stream_config["sheet_id"],
         )
 
         prepared_request = config_stream.prepare_request(None, None)
