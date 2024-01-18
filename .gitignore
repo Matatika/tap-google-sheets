@@ -5,6 +5,9 @@
 
 .meltano/
 
+# Ignore meltano plugins lock files
+plugins/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -137,3 +140,6 @@ dmypy.json
 
 # VSCode files
 .vscode
+
+# intellij
+.idea

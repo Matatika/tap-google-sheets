@@ -19,11 +19,12 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
     child_sheet_name = None
     primary_key = None
     url_base = "https://sheets.googleapis.com/v4/spreadsheets"
+    stream_config = None
 
     @property
     def path(self):
         """Set the path for the stream."""
-        return f"/{self.config['sheet_id']}/values/{self.child_sheet_name}"
+        return f"/{self.stream_config['sheet_id']}/values/{self.child_sheet_name}"
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         """Parse response, build response back up into json, update stream schema."""
