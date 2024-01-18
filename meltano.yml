@@ -25,6 +25,8 @@ plugins:
         - name: sheet_id
         - name: output_name
         - name: child_sheet_name
+        - name: key_properties
+          kind: array
   loaders:
     - name: target-jsonl
       variant: andyh1203
