@@ -28,6 +28,7 @@ plugins:
         - name: key_properties
           kind: array
         - name: sheets
+          kind: array
   loaders:
     - name: target-jsonl
       variant: andyh1203
