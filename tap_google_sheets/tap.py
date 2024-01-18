@@ -75,7 +75,7 @@ class TapGoogleSheets(Tap):
 
         sheets = self.config.get("sheets") or [self.config]
         for stream_config in sheets:
-            stream_name = stream_config.get("output_name") or self.get_sheet_name()
+            stream_name = stream_config.get("output_name") or self.get_sheet_name(stream_config)
             stream_name = stream_name.replace(" ", "_")
             key_properties = stream_config.get("key_properties", [])
 
