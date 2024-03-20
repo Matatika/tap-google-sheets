@@ -3,8 +3,8 @@
 import unittest
 
 import responses
-import singer_sdk.io_base as io
 import singer_sdk._singerlib as singer
+import singer_sdk.io_base as io
 
 import tap_google_sheets.tests.utils as test_utils
 from tap_google_sheets.tap import TapGoogleSheets
