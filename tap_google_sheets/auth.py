@@ -2,7 +2,6 @@
 
 import json
 from datetime import datetime
-from typing import Optional
 
 import requests
 from singer_sdk.authenticators import OAuthAuthenticator, SingletonMeta
@@ -44,10 +43,10 @@ class ProxyGoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta
         self._auth_body = auth_body
 
         # Initialize internal tracking attributes
-        self.access_token: Optional[str] = None
-        self.refresh_token: Optional[str] = None
-        self.last_refreshed: Optional[datetime] = None
-        self.expires_in: Optional[int] = None
+        self.access_token = None
+        self.refresh_token = None
+        self.last_refreshed = None
+        self.expires_in = None
 
     def is_token_valid(self) -> bool:
         """Check if token is valid."""

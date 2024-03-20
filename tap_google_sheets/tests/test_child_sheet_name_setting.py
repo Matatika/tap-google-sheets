@@ -4,6 +4,7 @@ import unittest
 
 import responses
 import singer_sdk._singerlib as singer
+import singer_sdk.io_base as io
 
 import tap_google_sheets.tests.utils as test_utils
 from tap_google_sheets.tap import TapGoogleSheets
@@ -26,7 +27,7 @@ class TestChildSheetNameSetting(unittest.TestCase):
         responses.reset()
         del test_utils.SINGER_MESSAGES[:]
 
-        singer.write_message = test_utils.accumulate_singer_messages
+        io.singer_write_message = test_utils.accumulate_singer_messages
 
     @responses.activate()
     def test_discovered_stream_name(self):
@@ -66,13 +67,14 @@ class TestChildSheetNameSetting(unittest.TestCase):
 
         tap.sync_all()
 
-        self.assertEqual(len(test_utils.SINGER_MESSAGES), 4)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[0], singer.SchemaMessage)
+        self.assertEqual(len(test_utils.SINGER_MESSAGES), 5)
+        self.assertIsInstance(test_utils.SINGER_MESSAGES[0], singer.StateMessage)
         self.assertIsInstance(test_utils.SINGER_MESSAGES[1], singer.SchemaMessage)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[2], singer.RecordMessage)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[3], singer.StateMessage)
+        self.assertIsInstance(test_utils.SINGER_MESSAGES[2], singer.SchemaMessage)
+        self.assertIsInstance(test_utils.SINGER_MESSAGES[3], singer.RecordMessage)
+        self.assertIsInstance(test_utils.SINGER_MESSAGES[4], singer.StateMessage)
 
         # Assert that data is sycned from the mocked response
         self.assertEquals(
-            test_utils.SINGER_MESSAGES[2].record, {"Column_One": "1", "Column_Two": "1"}
+            test_utils.SINGER_MESSAGES[3].record, {"Column_One": "1", "Column_Two": "1"}
         )
