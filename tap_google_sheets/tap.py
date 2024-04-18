@@ -86,7 +86,7 @@ class TapGoogleSheets(Tap):
 
             stream_schema = self.get_schema(google_sheet_data)
 
-            child_sheet_name = self.config.get(
+            child_sheet_name = stream_config.get(
                 "child_sheet_name"
             ) or self.get_first_visible_child_sheet_name(google_sheet_data)
 
