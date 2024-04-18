@@ -4,7 +4,6 @@ from tap_google_sheets.tap import TapGoogleSheets
 
 
 class TestFirstLineRange(unittest.TestCase):
-
     def test_first_line_range(self):
         """Test first line range."""
         test_pairs = [
@@ -19,7 +18,9 @@ class TestFirstLineRange(unittest.TestCase):
         ]
         for test_input, expected in test_pairs:
             stream_config = {"range": test_input}
-            self.assertEqual(expected, TapGoogleSheets.get_first_line_range(stream_config))
+            self.assertEqual(
+                expected, TapGoogleSheets.get_first_line_range(stream_config)
+            )
 
     def test_empty_range(self):
         """Test empty range."""

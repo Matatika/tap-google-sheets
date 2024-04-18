@@ -143,7 +143,9 @@ class TapGoogleSheets(Tap):
         first_line_range = "1:1"
         range = stream_config.get("range")
         if range:
-            start_column, start_line, end_column, end_line = re.findall(r"^([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)$", range)[0]
+            start_column, start_line, end_column, end_line = re.findall(
+                r"^([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)$", range
+            )[0]
             start_column = start_column or ""
             start_line = start_line or "1"
             end_column = end_column or ""
@@ -161,7 +163,8 @@ class TapGoogleSheets(Tap):
             + stream_config["sheet_id"]
             + "/values/"
             + stream_config.get("child_sheet_name", "")
-            + "!" + self.get_first_line_range(stream_config),
+            + "!"
+            + self.get_first_line_range(stream_config),
         )
 
         prepared_request = config_stream.prepare_request(None, None)
