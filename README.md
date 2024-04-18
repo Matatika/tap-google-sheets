@@ -64,6 +64,7 @@ Setting | Required | Type             | Description |
 `sheet_id` | Required | String           | Your target google sheet id
 `output_name` | Optional | String           | Optionailly rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String           | Optionally choose a different sheet from your Google Sheet file
+`range` | Optional | String | Optionally choose a range of data from your Google Sheet file. Example: `B5:GH` (starts at B5 and goes to columns GH at the end of the sheet)
 `key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
 `sheets` | Optional | Array of Objects | Optionally provide a list of configs for each sheet/stream. See "Per Sheet Config" below. Overrides the `sheet_id` provided at the root level.
 
@@ -74,6 +75,7 @@ Setting | Required | Type | Description |
 `sheet_id` | Required | String | Your target google sheet id
 `output_name` | Optional | String | Optionailly rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String | Optionally choose a different sheet from your Google Sheet file
+`range` | Optional | String | Optionally choose a range of data from your Google Sheet file. Example: `B5:GH` (starts at B5 and goes to columns GH at the end of the sheet)
 `key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
 
 ### Environment Variable
@@ -85,6 +87,7 @@ These settings expand into environment variables of:
 - `TAP_GOOGLE_SHEETS_SHEET_ID`
 - `TAP_GOOGLE_SHEETS_OUTPUT_NAME`
 - `TAP_GOOGLE_SHEETS_CHILD_SHEET_NAME`
+- `TAP_GOOGLE_SHEETS_RANGE`
 - `TAP_GOOGLE_SHEETS_KEY_PROPERTIES`
 - `TAP_GOOGLE_SHEETS_SHEETS`
 
@@ -122,7 +125,7 @@ These settings expand into environment variables of:
 
 ## Roadmap
 
-- [ ] Add setting to optionally allow the selection of a range of data from a sheet. (Add an optional range setting).
+- [x] Add setting to optionally allow the selection of a range of data from a sheet. (Add an optional range setting).
 
 - [ ] Improve default behavior of a sheet with multiple columns of the same name and `target-postgres`.
 

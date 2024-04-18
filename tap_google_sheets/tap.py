@@ -137,6 +137,20 @@ class TapGoogleSheets(Tap):
 
         return sheet_in_sheet_name
 
+    @staticmethod
+    def get_first_line_range(stream_config):
+        """Get the range of the first line in the google sheet."""
+        first_line_range = "1:1"
+        range = stream_config.get("range")
+        if range:
+            start_column, start_line, end_column, end_line = re.findall(r"^([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)$", range)[0]
+            start_column = start_column or ""
+            start_line = start_line or "1"
+            end_column = end_column or ""
+
+            first_line_range = start_column + start_line + ":" + end_column + start_line
+        return first_line_range
+
     def get_sheet_data(self, stream_config):
         """Get the data from the selected or first visible sheet in the google sheet."""
         config_stream = GoogleSheetsBaseStream(
@@ -147,7 +161,7 @@ class TapGoogleSheets(Tap):
             + stream_config["sheet_id"]
             + "/values/"
             + stream_config.get("child_sheet_name", "")
-            + "!1:1",
+            + "!" + self.get_first_line_range(stream_config),
         )
 
         prepared_request = config_stream.prepare_request(None, None)
