@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         # Only lint using the primary version used for dev
-        python-version: ['3.9']
+        python-version: ['3.12']
 
     steps:
     - uses: actions/checkout@v2
