@@ -69,10 +69,10 @@ class TestIgnoringUnnamedColumns(unittest.TestCase):
         self.assertIsInstance(test_utils.SINGER_MESSAGES[5], singer.StateMessage)
 
         # Assert that the second unnamed column and its values are ignored
-        self.assertEquals(
+        self.assertEqual(
             test_utils.SINGER_MESSAGES[3].record, {"Column_One": "1", "Column_Two": "1"}
         )
 
-        self.assertEquals(
+        self.assertEqual(
             test_utils.SINGER_MESSAGES[4].record, {"Column_One": "2", "Column_Two": "2"}
         )
