@@ -25,7 +25,7 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
     def path(self):
         """Set the path for the stream."""
         path = f"/{self.stream_config['sheet_id']}/values/{self.child_sheet_name}"
-        sheet_range = self.stream_config.get("range", "")
+        sheet_range = self.stream_config.get("range")
         if sheet_range:
             path += f"!{sheet_range}"
         return path

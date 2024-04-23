@@ -6,6 +6,7 @@ from typing import List
 import requests
 from singer_sdk import Stream, Tap
 from singer_sdk import typing as th
+from singer_sdk.exceptions import ConfigValidationError
 
 from tap_google_sheets.client import GoogleSheetsBaseStream
 from tap_google_sheets.streams import GoogleSheetsStream
@@ -14,6 +15,16 @@ from tap_google_sheets.streams import GoogleSheetsStream
 class TapGoogleSheets(Tap):
     """google_sheets tap class."""
 
+    a1_allowed_regexp = [
+        r"^([A-Za-z]{1,3})(\d{1,7})()()$",  # e.g. G8
+        r"^([A-Za-z]{1,3})():([A-Za-z]{1,3})()$",  # e.g. C:G
+        r"^()(\d{1,7}):()(\d{1,7})$",  # e.g. 1:5
+        r"^([A-Za-z]{1,3})(\d{1,7}):()(\d{1,7})$",  # e.g. C1:5
+        r"^([A-Za-z]{1,3})(\d{1,7}):([A-Za-z]{1,3})()$",  # e.g. A1:B
+        r"^([A-Za-z]{1,3})(\d{1,7}):([A-Za-z]{1,3})(\d{1,7})$",  # e.g. C4:G14
+        r"^([A-Za-z]{1,3})():([A-Za-z]{1,3})(\d{1,7})$",  # e.g. A:B5
+        r"^()(\d{1,7}):([A-Za-z]{1,3})(\d{1,7})$",  # e.g. 2:B5
+    ]
     name = "tap-google-sheets"
 
     per_sheet_config = th.ObjectType(
@@ -36,6 +47,16 @@ class TapGoogleSheets(Tap):
             "key_properties",
             th.ArrayType(th.StringType),
             description="Optionally choose one or more primary key columns",
+            required=False,
+        ),
+        th.Property(
+            "range",
+            th.StringType(pattern=r"|".join(a1_allowed_regexp)),
+            description=(
+                "Optionally choose a range of data using cell start and end coordinates"
+                " - see [A1 notation](https://developers.google.com/sheets/api/guides/concepts#expandable-1)"  # noqa: E501
+                " for more information"
+            ),
             required=False,
         ),
     )
@@ -139,19 +160,30 @@ class TapGoogleSheets(Tap):
 
     @staticmethod
     def get_first_line_range(stream_config):
-        """Get the range of the first line in the google sheet."""
-        first_line_range = "1:1"
-        range = stream_config.get("range")
-        if range:
-            start_column, start_line, end_column, end_line = re.findall(
-                r"^([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)$", range
-            )[0]
-            start_column = start_column or ""
-            start_line = start_line or "1"
-            end_column = end_column or ""
-
-            first_line_range = start_column + start_line + ":" + end_column + start_line
-        return first_line_range
+        """Get the range of the first line in the Google sheet."""
+        # when the range is not specified, it will default to the first line
+        sheet_range = stream_config.get("range", "1:1")
+        for regex in TapGoogleSheets.a1_allowed_regexp:
+            result = re.match(regex, sheet_range)
+            if result:
+                start_column, start_line, end_column, end_line = result.groups("")
+                break
+        else:
+            # This should never happen, regex should be validated by the jsonschema
+            raise ConfigValidationError("Invalid range format")
+        if start_line and end_line:
+            line_number = str(min(int(start_line), int(end_line)))
+        else:
+            line_number = start_line or end_line or "1"
+        #  If end_line and end_column is not specified, use start_column
+        #  it can happen just when the range is single cell e.g "A5" -> "A5:A5"
+        return (
+            start_column
+            + line_number
+            + ":"
+            + (end_column if end_line else end_column or start_column)
+            + line_number
+        )
 
     def get_sheet_data(self, stream_config):
         """Get the data from the selected or first visible sheet in the google sheet."""
