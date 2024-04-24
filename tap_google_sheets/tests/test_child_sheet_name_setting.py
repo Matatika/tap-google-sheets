@@ -75,6 +75,6 @@ class TestChildSheetNameSetting(unittest.TestCase):
         self.assertIsInstance(test_utils.SINGER_MESSAGES[4], singer.StateMessage)
 
         # Assert that data is sycned from the mocked response
-        self.assertEqual(
+        self.assertEquals(
             test_utils.SINGER_MESSAGES[3].record, {"Column_One": "1", "Column_Two": "1"}
         )

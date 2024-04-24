@@ -76,7 +76,7 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
         self.assertIsInstance(test_utils.SINGER_MESSAGES[4], singer.StateMessage)
 
         # Assert that column names have been underscored
-        self.assertEqual(
+        self.assertEquals(
             test_utils.SINGER_MESSAGES[3].record,
             {
                 "Column_One": "1",

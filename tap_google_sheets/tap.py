@@ -51,7 +51,7 @@ class TapGoogleSheets(Tap):
         ),
         th.Property(
             "range",
-            th.StringType(pattern=r"|".join(a1_allowed_regexp)),
+            th.StringType(),
             description=(
                 "Optionally choose a range of data using cell start and end coordinates"
                 " - see [A1 notation](https://developers.google.com/sheets/api/guides/concepts#expandable-1)"  # noqa: E501
