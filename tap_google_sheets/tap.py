@@ -169,7 +169,7 @@ class TapGoogleSheets(Tap):
                 start_column, start_line, end_column, end_line = result.groups("")
                 break
         else:
-            raise ConfigValidationError("Invalid range format, please use valid A1 notation.")
+            raise ConfigValidationError("Invalid A1 notation for range.")
         if start_line and end_line:
             line_number = str(min(int(start_line), int(end_line)))
         else:
