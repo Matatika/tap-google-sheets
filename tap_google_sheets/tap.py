@@ -158,31 +158,36 @@ class TapGoogleSheets(Tap):
 
         return sheet_in_sheet_name
 
-    @staticmethod
-    def get_first_line_range(stream_config):
+    @classmethod
+    def get_first_line_range(cls, stream_config):
         """Get the range of the first line in the Google sheet."""
-        # when the range is not specified, it will default to the first line
-        sheet_range = stream_config.get("range", "1:1")
-        for regex in TapGoogleSheets.a1_allowed_regexp:
-            result = re.match(regex, sheet_range)
-            if result:
-                start_column, start_line, end_column, end_line = result.groups("")
-                break
-        else:
-            raise ConfigValidationError("Invalid A1 notation for range.")
+        sheet_range = stream_config.get("range")
+
+        # when the range is not specified, it will default to the first line and
+        # short-circuit further evalutation
+        if sheet_range is None:
+            return "1:1"
+
+        range_matcher = (re.match(p, sheet_range) for p in cls.a1_allowed_regexp)
+
+        try:
+            match = next(match for match in range_matcher if match)
+        except StopIteration as e:
+            raise ConfigValidationError("Invalid A1 notation for range") from e
+
+        start_column, start_line, end_column, end_line = match.groups("")
+
         if start_line and end_line:
-            line_number = str(min(int(start_line), int(end_line)))
+            line_number = min(int(start_line), int(end_line))
         else:
             line_number = start_line or end_line or "1"
-        #  If end_line and end_column is not specified, use start_column
+
+        #  If both end_line and end_column are not specified, use start_column
         #  it can happen just when the range is single cell e.g "A5" -> "A5:A5"
-        return (
-            start_column
-            + line_number
-            + ":"
-            + (end_column if end_line else end_column or start_column)
-            + line_number
-        )
+        if not end_column and not end_line:
+            end_column = start_column
+
+        return f"{start_column}{line_number}:{end_column}{line_number}"
 
     def get_sheet_data(self, stream_config):
         """Get the data from the selected or first visible sheet in the google sheet."""
