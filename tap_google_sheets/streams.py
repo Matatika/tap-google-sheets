@@ -24,7 +24,11 @@ class GoogleSheetsStream(GoogleSheetsBaseStream):
     @property
     def path(self):
         """Set the path for the stream."""
-        return f"/{self.stream_config['sheet_id']}/values/{self.child_sheet_name}"
+        path = f"/{self.stream_config['sheet_id']}/values/{self.child_sheet_name}"
+        sheet_range = self.stream_config.get("range")
+        if sheet_range:
+            path += f"!{sheet_range}"
+        return path
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         """Parse response, build response back up into json, update stream schema."""

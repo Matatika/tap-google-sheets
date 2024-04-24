@@ -64,6 +64,7 @@ Setting | Required | Type             | Description |
 `sheet_id` | Required | String           | Your target google sheet id
 `output_name` | Optional | String           | Optionailly rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String           | Optionally choose a different sheet from your Google Sheet file
+`range` | Optional | String | Optionally choose a range of data from your Google Sheet file (defaults to the entire sheet)<br><br>Range is defined using [A1 notation](https://developers.google.com/sheets/api/guides/concepts#expandable-1) and is start/end inclusive. Examples:<ul><li>`B5:G45` - start at `B5` and end at `G45`</li><li>`A:T` - start at `A1` and end at the last cell of column `T` (same as `A1:T` and `A:T1`)</li><li>`3:5` - start at `A3` and end at the last cell of row `5` (same as `A3:5` and `3:A5`)</li><li>`D3:ZZZ` - start at `D3` and end at the last cell in the sheet</li></ul>
 `key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
 `sheets` | Optional | Array of Objects | Optionally provide a list of configs for each sheet/stream. See "Per Sheet Config" below. Overrides the `sheet_id` provided at the root level.
 
@@ -74,6 +75,7 @@ Setting | Required | Type | Description |
 `sheet_id` | Required | String | Your target google sheet id
 `output_name` | Optional | String | Optionailly rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String | Optionally choose a different sheet from your Google Sheet file
+`range` | Optional | String | Optionally choose a range of data from your Google Sheet file (defaults to the entire sheet)<br><br>Range is defined using [A1 notation](https://developers.google.com/sheets/api/guides/concepts#expandable-1) and is start/end inclusive. Examples:<ul><li>`B5:G45` - start at `B5` and end at `G45`</li><li>`A:T` - start at `A1` and end at the last cell of column `T` (same as `A1:T` and `A:T1`)</li><li>`3:5` - start at `A3` and end at the last cell of row `5` (same as `A3:5` and `3:A5`)</li><li>`D3:ZZZ` - start at `D3` and end at the last cell in the sheet</li></ul>
 `key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
 
 ### Environment Variable
@@ -85,6 +87,7 @@ These settings expand into environment variables of:
 - `TAP_GOOGLE_SHEETS_SHEET_ID`
 - `TAP_GOOGLE_SHEETS_OUTPUT_NAME`
 - `TAP_GOOGLE_SHEETS_CHILD_SHEET_NAME`
+- `TAP_GOOGLE_SHEETS_RANGE`
 - `TAP_GOOGLE_SHEETS_KEY_PROPERTIES`
 - `TAP_GOOGLE_SHEETS_SHEETS`
 
@@ -122,7 +125,7 @@ These settings expand into environment variables of:
 
 ## Roadmap
 
-- [ ] Add setting to optionally allow the selection of a range of data from a sheet. (Add an optional range setting).
+- [x] Add setting to optionally allow the selection of a range of data from a sheet. (Add an optional range setting).
 
 - [ ] Improve default behavior of a sheet with multiple columns of the same name and `target-postgres`.
 
