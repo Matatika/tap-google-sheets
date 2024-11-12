@@ -3,7 +3,6 @@
 import unittest
 
 import responses
-import singer_sdk.io_base as io
 
 import tap_google_sheets.tests.utils as test_utils
 from tap_google_sheets.tap import TapGoogleSheets
@@ -18,7 +17,7 @@ class TestDiscoveredStreamName(unittest.TestCase):
         responses.reset()
         del test_utils.SINGER_MESSAGES[:]
 
-        io.singer_write_message = test_utils.accumulate_singer_messages
+        TapGoogleSheets.write_message = test_utils.accumulate_singer_messages
 
     @responses.activate()
     def test_discovered_stream_name(self):
