@@ -17,7 +17,7 @@ MOCK_CONFIG = {
 }
 
 
-def accumulate_singer_messages(message):
+def accumulate_singer_messages(_, message):
     """Collect singer library write_message in tests."""
     SINGER_MESSAGES.append(message)
 
