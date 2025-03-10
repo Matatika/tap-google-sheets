@@ -24,6 +24,8 @@ plugins:
           kind: password
         - name: sheet_id
         - name: output_name
+        - name: child_sheet_names
+          kind: array
         - name: child_sheet_name
         - name: range
         - name: key_properties

@@ -63,6 +63,7 @@ Setting | Required | Type             | Description |
 `oauth_credentials.refresh_token` | Required | String           | Your google refresh token
 `sheet_id` | Required | String           | Your target google sheet id
 `output_name` | Optional | String           | Optionailly rename the stream and output file or table from the tap
+`child_sheet_names` | Optional | Array of Strings           | Optionally choose different sheets from your Google Sheet file (shortcut for `sheets` config)
 `child_sheet_name` | Optional | String           | Optionally choose a different sheet from your Google Sheet file
 `range` | Optional | String | Optionally choose a range of data from your Google Sheet file (defaults to the entire sheet)<br><br>Range is defined using [A1 notation](https://developers.google.com/sheets/api/guides/concepts#expandable-1) and is start/end inclusive. Examples:<ul><li>`B5:G45` - start at `B5` and end at `G45`</li><li>`A:T` - start at `A1` and end at the last cell of column `T` (same as `A1:T` and `A:T1`)</li><li>`3:5` - start at `A3` and end at the last cell of row `5` (same as `A3:5` and `3:A5`)</li><li>`D3:ZZZ` - start at `D3` and end at the last cell in the sheet</li></ul>
 `key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
@@ -86,6 +87,7 @@ These settings expand into environment variables of:
 - `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_REFRESH_TOKEN`
 - `TAP_GOOGLE_SHEETS_SHEET_ID`
 - `TAP_GOOGLE_SHEETS_OUTPUT_NAME`
+- `TAP_GOOGLE_SHEETS_CHILD_SHEET_NAMES`
 - `TAP_GOOGLE_SHEETS_CHILD_SHEET_NAME`
 - `TAP_GOOGLE_SHEETS_RANGE`
 - `TAP_GOOGLE_SHEETS_KEY_PROPERTIES`
@@ -95,7 +97,9 @@ These settings expand into environment variables of:
 
 ## FAQ / Things to Note
 
-* If you do not provide a `child_sheet_name`, the tap will find the first visible sheet in your Google Sheet and try to sync the data from there.
+* If you do not provide `child_sheet_names` or a `child_sheet_name`, the tap will find the first visible sheet in your Google Sheet and try to sync the data from there.
+
+* `child_sheet_names` config takes precedence over `child_sheet_name`. 
 
 * You need to provide all the required settings for this tap to run the it. These settings are used to generate the stream and schema for the tap to use from your Google Sheet.
 
@@ -112,6 +116,8 @@ These settings expand into environment variables of:
 * When using the `key_properties` setting, you must choose columns with no null values.
 
 * You can extract multiple sheets using the `sheets` config, which is just an array containing configurable properties for each item. Doing so will ignore any sheet config defined by the root level `sheet_id`, `output_name`, `child_sheet_name`, `key_properties` properties.
+
+  Alternative, if you just want to extract multiple child sheets within the same sheet file, you can set `child_sheet_names` for which
 
 ### Loaders Tested
 

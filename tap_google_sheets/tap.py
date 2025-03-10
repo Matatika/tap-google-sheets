@@ -36,6 +36,14 @@ class TapGoogleSheets(Tap):
             required=False,
         ),
         th.Property(
+            "child_sheet_names",
+            th.ArrayType(th.StringType),
+            description=(
+                "Optionally sync data from different sheets in your Google Sheet"
+            ),
+            required=False,
+        ),
+        th.Property(
             "child_sheet_name",
             th.StringType,
             description=(
@@ -95,7 +103,22 @@ class TapGoogleSheets(Tap):
         """Return a list of discovered streams."""
         streams: List[Stream] = []
 
-        sheets = self.config.get("sheets") or [self.config]
+        sheets = self.config.get("sheets")
+        child_sheet_names = self.config.get("child_sheet_names")
+
+        if not sheets:
+            sheets = (
+                [
+                    {
+                        **self.config,
+                        "child_sheet_name": name,
+                    }
+                    for name in child_sheet_names
+                ]
+                if child_sheet_names
+                else [self.config]
+            )
+
         for stream_config in sheets:
             stream_name = stream_config.get("output_name") or self.get_sheet_name(
                 stream_config
@@ -123,7 +146,7 @@ class TapGoogleSheets(Tap):
 
         return streams
 
-    def get_sheet_name(self, stream_config):
+    def get_sheet_name(self, stream_config: dict):
         """Get the name of the spreadsheet."""
         config_stream = GoogleSheetsBaseStream(
             tap=self,
@@ -137,7 +160,10 @@ class TapGoogleSheets(Tap):
 
         response: requests.Response = config_stream._request(prepared_request, None)
 
-        return response.json().get("title")
+        sheet_name = response.json()["title"]
+        child_sheet_name = stream_config.get("child_sheet_name")
+
+        return f"{sheet_name}-{child_sheet_name}" if child_sheet_name else sheet_name
 
     def get_schema(self, google_sheet_data: requests.Response):
         """Build the schema from the data returned by the google sheet."""
