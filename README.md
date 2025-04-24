@@ -62,7 +62,7 @@ Setting | Required | Type             | Description |
 `oauth_credentials.client_secret` | Required | String           | Your google client secret
 `oauth_credentials.refresh_token` | Required | String           | Your google refresh token
 `sheet_id` | Required | String           | Your target google sheet id
-`output_name` | Optional | String           | Optionailly rename the stream and output file or table from the tap
+`output_name` | Optional | String           | Optionally rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String           | Optionally choose a different sheet from your Google Sheet file
 `range` | Optional | String | Optionally choose a range of data from your Google Sheet file (defaults to the entire sheet)<br><br>Range is defined using [A1 notation](https://developers.google.com/sheets/api/guides/concepts#expandable-1) and is start/end inclusive. Examples:<ul><li>`B5:G45` - start at `B5` and end at `G45`</li><li>`A:T` - start at `A1` and end at the last cell of column `T` (same as `A1:T` and `A:T1`)</li><li>`3:5` - start at `A3` and end at the last cell of row `5` (same as `A3:5` and `3:A5`)</li><li>`D3:ZZZ` - start at `D3` and end at the last cell in the sheet</li></ul>
 `key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
@@ -73,7 +73,7 @@ Setting | Required | Type             | Description |
 Setting | Required | Type | Description |
 ------- | -------- | ---- | ----------- |
 `sheet_id` | Required | String | Your target google sheet id
-`output_name` | Optional | String | Optionailly rename the stream and output file or table from the tap
+`output_name` | Optional | String | Optionally rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String | Optionally choose a different sheet from your Google Sheet file
 `range` | Optional | String | Optionally choose a range of data from your Google Sheet file (defaults to the entire sheet)<br><br>Range is defined using [A1 notation](https://developers.google.com/sheets/api/guides/concepts#expandable-1) and is start/end inclusive. Examples:<ul><li>`B5:G45` - start at `B5` and end at `G45`</li><li>`A:T` - start at `A1` and end at the last cell of column `T` (same as `A1:T` and `A:T1`)</li><li>`3:5` - start at `A3` and end at the last cell of row `5` (same as `A3:5` and `3:A5`)</li><li>`D3:ZZZ` - start at `D3` and end at the last cell in the sheet</li></ul>
 `key_properties` | Optional | Array of Strings | Optionally choose primary key column(s) from your Google Sheet file. Example: `["column_one", "column_two"]`
