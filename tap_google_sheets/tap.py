@@ -94,9 +94,15 @@ class TapGoogleSheets(Tap):
     def discover_streams(self) -> List[Stream]:
         """Return a list of discovered streams."""
         streams: List[Stream] = []
+        self.base_config
 
-        sheets = self.config.get("sheets") or [self.config]
+        sheets = self.config.get("sheets") or [{}]
         for stream_config in sheets:
+
+            # apply top-level config as defaults
+            for k, v in self.config.items():
+                stream_config.setdefault(k, v)
+
             stream_name = stream_config.get("output_name") or self.get_sheet_name(
                 stream_config
             )
