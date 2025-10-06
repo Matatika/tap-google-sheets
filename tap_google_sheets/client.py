@@ -1,11 +1,15 @@
 """REST client handling, including google_sheetsStream base class."""
 
+from http import HTTPStatus
 from pathlib import Path
+from random import random
 from typing import Any, Dict, Iterable, Optional
+from typing_extensions import override
 
 import requests
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
+from singer_sdk.exceptions import RetriableAPIError
 
 from tap_google_sheets.auth import (
     GoogleSheetsAuthenticator,
@@ -102,3 +106,28 @@ class GoogleSheetsBaseStream(RESTStream):
         """Parse the response and return an iterator of result rows."""
         # TODO: Parse response body and return a set of records.
         yield from extract_jsonpath(self.records_jsonpath, input=response.json())
+
+    @override
+    def backoff_wait_generator(self):
+        """Custom exponential backoff for 429 responses."""
+        def _wait_time(retriable_api_error: RetriableAPIError):
+            if retriable_api_error.response.status_code != HTTPStatus.TOO_MANY_REQUESTS:
+                raise retriable_api_error
+
+            attempt = retriable_api_error.attempt_number or 1
+            base_delay = min(2 ** (attempt - 1), 64)
+
+            # Add up to 1s of jitter (recommeded by google)
+            jitter = random.uniform(0, 1)
+
+            wait_time = base_delay + jitter
+            self.logger.warning(
+                f"Rate limit hit (429). Retrying in {wait_time:.2f}s (attempt {attempt})"
+            )
+            return wait_time
+
+        return _wait_time
+    
+    @override
+    def backoff_max_tries(self):
+        return 8
