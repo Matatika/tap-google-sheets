@@ -3,11 +3,11 @@
 from pathlib import Path
 from random import random
 from typing import Any, Dict, Iterable, Optional
-from typing_extensions import override
 
 import requests
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
+from typing_extensions import override
 
 from tap_google_sheets.auth import (
     GoogleSheetsAuthenticator,
