@@ -1,7 +1,7 @@
 """REST client handling, including google_sheetsStream base class."""
 
+import random
 from pathlib import Path
-from random import random
 from typing import Any, Dict, Iterable, Optional
 
 import requests
