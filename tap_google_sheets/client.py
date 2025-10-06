@@ -106,9 +106,11 @@ class GoogleSheetsBaseStream(RESTStream):
         yield from extract_jsonpath(self.records_jsonpath, input=response.json())
 
     def backoff_jitter(self, value: float):
+        """Add some randomness to our backoff time."""
         jitter = random.uniform(0, 1)
         return value + jitter
 
     @override
     def backoff_max_tries(self):
+        """Return the maximum number of backoff attempts to make."""
         return 8
