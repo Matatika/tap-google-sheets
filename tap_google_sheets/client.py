@@ -105,8 +105,9 @@ class GoogleSheetsBaseStream(RESTStream):
         # TODO: Parse response body and return a set of records.
         yield from extract_jsonpath(self.records_jsonpath, input=response.json())
 
-    def backoff_jitter(self):
-        return random.uniform(0, 1)
+    def backoff_jitter(self, value: float):
+        jitter = random.uniform(0, 1)
+        return value + jitter
 
     @override
     def backoff_max_tries(self):
