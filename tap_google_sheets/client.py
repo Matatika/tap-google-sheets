@@ -1,13 +1,10 @@
 """REST client handling, including google_sheetsStream base class."""
-
-import random
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
 import requests
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
-from typing_extensions import override
 
 from tap_google_sheets.auth import (
     GoogleSheetsAuthenticator,
@@ -104,13 +101,3 @@ class GoogleSheetsBaseStream(RESTStream):
         """Parse the response and return an iterator of result rows."""
         # TODO: Parse response body and return a set of records.
         yield from extract_jsonpath(self.records_jsonpath, input=response.json())
-
-    def backoff_jitter(self, value: float):
-        """Add some randomness to our backoff time."""
-        jitter = random.uniform(0, 1)
-        return value + jitter
-
-    @override
-    def backoff_max_tries(self):
-        """Return the maximum number of backoff attempts to make."""
-        return 8

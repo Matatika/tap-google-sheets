@@ -141,7 +141,8 @@ class TapGoogleSheets(Tap):
 
         prepared_request = config_stream.prepare_request(None, None)
 
-        response: requests.Response = config_stream._request(prepared_request, None)
+        decorated_request = config_stream.request_decorator(config_stream._request)
+        response: requests.Response = decorated_request(prepared_request, None)
 
         return response.json().get("title")
 
@@ -211,6 +212,7 @@ class TapGoogleSheets(Tap):
 
         prepared_request = config_stream.prepare_request(None, None)
 
-        response: requests.Response = config_stream._request(prepared_request, None)
+        decorated_request = config_stream.request_decorator(config_stream._request)
+        response: requests.Response = decorated_request(prepared_request, None)
 
         return response
