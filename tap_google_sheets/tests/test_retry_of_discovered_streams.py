@@ -1,7 +1,9 @@
 import unittest
+
 import responses
-from tap_google_sheets.tap import TapGoogleSheets
+
 import tap_google_sheets.tests.utils as test_utils
+from tap_google_sheets.tap import TapGoogleSheets
 
 
 class TestRetryOfDiscoveredStreams(unittest.TestCase):
