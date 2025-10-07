@@ -23,7 +23,7 @@ class TestRetryOfDiscoveredStreams(unittest.TestCase):
             responses.POST,
             "https://oauth2.googleapis.com/token",
             json={"access_token": "mocked_token", "expires_in": 3600},
-            status=200
+            status=200,
         )
 
         responses.add(
@@ -64,7 +64,8 @@ class TestRetryOfDiscoveredStreams(unittest.TestCase):
         self.assertEqual(tap.discover_streams()[0].name, "File_Name_One")
         # check that a retry happened by confirming both Sheets API responses occurred
         sheet_requests = [
-            call for call in responses.calls
+            call
+            for call in responses.calls
             if "sheets.googleapis.com/v4/spreadsheets" in call.request.url
         ]
         self.assertGreaterEqual(len(sheet_requests), 2)

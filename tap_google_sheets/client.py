@@ -1,4 +1,5 @@
 """REST client handling, including google_sheetsStream base class."""
+
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
@@ -102,7 +103,7 @@ class GoogleSheetsBaseStream(RESTStream):
         """Parse the response and return an iterator of result rows."""
         # TODO: Parse response body and return a set of records.
         yield from extract_jsonpath(self.records_jsonpath, input=response.json())
-    
+
     @override
     def backoff_max_tries(self):
         """Return the maximum number of backoff attempts to make."""
