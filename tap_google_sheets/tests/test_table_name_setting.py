@@ -16,9 +16,6 @@ class TestOutputNameSetting(unittest.TestCase):
         self.mock_config["output_name"] = "Test Output Name"
 
         responses.reset()
-        del test_utils.SINGER_MESSAGES[:]
-
-        TapGoogleSheets.write_message = test_utils.accumulate_singer_messages
 
     @responses.activate()
     def test_output_name(self):

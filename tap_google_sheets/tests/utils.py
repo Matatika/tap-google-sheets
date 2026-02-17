@@ -1,11 +1,9 @@
 """Test utilities."""
 
-from singer_sdk._singerlib.catalog import Catalog
 from singer_sdk.helpers import _catalog
+from singer_sdk.singerlib.catalog import Catalog
 
 from tap_google_sheets.tap import TapGoogleSheets
-
-SINGER_MESSAGES = []
 
 MOCK_CONFIG = {
     "oauth_credentials": {
@@ -15,11 +13,6 @@ MOCK_CONFIG = {
     },
     "sheet_id": "12345",
 }
-
-
-def accumulate_singer_messages(_, message):
-    """Collect singer library write_message in tests."""
-    SINGER_MESSAGES.append(message)
 
 
 def set_up_tap_with_custom_catalog(mock_config, stream_list):
