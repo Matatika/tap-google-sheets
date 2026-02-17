@@ -1,5 +1,8 @@
 """Tests column names are returned underscored."""
 
+import contextlib
+import io
+import json
 import unittest
 
 import responses
@@ -16,9 +19,6 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
         self.mock_config = test_utils.MOCK_CONFIG
 
         responses.reset()
-        del test_utils.SINGER_MESSAGES[:]
-
-        TapGoogleSheets.write_message = test_utils.accumulate_singer_messages
 
     @responses.activate()
     def test_underscoring_column_names(self):
@@ -65,18 +65,23 @@ class TestUnderscoringColumnNamed(unittest.TestCase):
 
         tap = TapGoogleSheets(config=self.mock_config)
 
-        tap.sync_all()
+        captured_stdout = io.StringIO()
+        with contextlib.redirect_stdout(captured_stdout):
+            tap.sync_all()
 
-        self.assertEqual(len(test_utils.SINGER_MESSAGES), 5)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[0], singer.StateMessage)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[1], singer.SchemaMessage)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[2], singer.SchemaMessage)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[3], singer.RecordMessage)
-        self.assertIsInstance(test_utils.SINGER_MESSAGES[4], singer.StateMessage)
+        singer_messages = [
+            json.loads(line) for line in captured_stdout.getvalue().splitlines()
+        ]
+
+        self.assertEqual(len(singer_messages), 4)
+        self.assertEqual(singer_messages[0]["type"], singer.SingerMessageType.SCHEMA)
+        self.assertEqual(singer_messages[1]["type"], singer.SingerMessageType.SCHEMA)
+        self.assertEqual(singer_messages[2]["type"], singer.SingerMessageType.RECORD)
+        self.assertEqual(singer_messages[3]["type"], singer.SingerMessageType.STATE)
 
         # Assert that column names have been underscored
         self.assertEqual(
-            test_utils.SINGER_MESSAGES[3].record,
+            singer_messages[2]["record"],
             {
                 "Column_One": "1",
                 "Column_Two": "1",
