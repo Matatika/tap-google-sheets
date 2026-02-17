@@ -6,7 +6,6 @@ import json
 import unittest
 
 import responses
-import singer_sdk.singerlib as singer
 
 from tap_google_sheets.tap import TapGoogleSheets
 
@@ -72,10 +71,10 @@ class TestChildSheetNameSetting(unittest.TestCase):
         ]
 
         self.assertEqual(len(singer_messages), 4)
-        self.assertEqual(singer_messages[0]["type"], singer.SingerMessageType.SCHEMA)
-        self.assertEqual(singer_messages[1]["type"], singer.SingerMessageType.SCHEMA)
-        self.assertEqual(singer_messages[2]["type"], singer.SingerMessageType.RECORD)
-        self.assertEqual(singer_messages[3]["type"], singer.SingerMessageType.STATE)
+        self.assertEqual(singer_messages[0]["type"], "SCHEMA")
+        self.assertEqual(singer_messages[1]["type"], "SCHEMA")
+        self.assertEqual(singer_messages[2]["type"], "RECORD")
+        self.assertEqual(singer_messages[3]["type"], "STATE")
 
         # Assert that data is sycned from the mocked response
         self.assertEqual(
