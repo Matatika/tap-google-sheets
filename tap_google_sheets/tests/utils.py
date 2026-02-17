@@ -1,7 +1,7 @@
 """Test utilities."""
 
-from singer_sdk._singerlib.catalog import Catalog
 from singer_sdk.helpers import _catalog
+from singer_sdk.singerlib.catalog import Catalog
 
 from tap_google_sheets.tap import TapGoogleSheets
 
