@@ -15,9 +15,6 @@ class TestDiscoveredStreamName(unittest.TestCase):
         self.mock_config = test_utils.MOCK_CONFIG
 
         responses.reset()
-        del test_utils.SINGER_MESSAGES[:]
-
-        TapGoogleSheets.write_message = test_utils.accumulate_singer_messages
 
     @responses.activate()
     def test_discovered_stream_name(self):
