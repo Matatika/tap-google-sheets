@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tap-google-sheets"
-version = "0.5.0"
+version = "0.6.0"
 description = "`tap-google-sheets` is a Singer tap for google_sheets, built with the Meltano SDK for Singer Taps."
 authors = ["Daniel Walker"]
 keywords = [
