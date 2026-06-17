@@ -9,6 +9,7 @@ from singer_sdk.streams import RESTStream
 from typing_extensions import override
 
 from tap_google_sheets.auth import (
+    GoogleServiceAccountAuthenticator,
     GoogleSheetsAuthenticator,
     ProxyGoogleSheetsAuthenticator,
 )
@@ -28,6 +29,12 @@ class GoogleSheetsBaseStream(RESTStream):
     def authenticator(self):
         """Return a new authenticator object."""
         base_auth_url = "https://oauth2.googleapis.com/token"
+
+        sa_credentials = self.config.get("service_account_credentials", {})
+        if sa_credentials.get("client_email") and sa_credentials.get("private_key"):
+            return GoogleServiceAccountAuthenticator(
+                stream=self, auth_endpoint=base_auth_url
+            )
 
         oauth_credentials = self.config.get("oauth_credentials", {})
 

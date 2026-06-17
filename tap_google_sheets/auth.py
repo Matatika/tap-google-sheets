@@ -1,12 +1,53 @@
 """Google Sheets Authentication."""
 
 import json
-from datetime import datetime
+import math
+from datetime import datetime, timedelta
 
 import requests
-from singer_sdk.authenticators import OAuthAuthenticator, SingletonMeta
+from singer_sdk.authenticators import (
+    OAuthAuthenticator,
+    OAuthJWTAuthenticator,
+    SingletonMeta,
+)
 from singer_sdk.helpers._util import utc_now
 from singer_sdk.streams import RESTStream
+
+GOOGLE_SHEETS_SCOPES = (
+    "https://www.googleapis.com/auth/spreadsheets.readonly "
+    "https://www.googleapis.com/auth/drive.readonly"
+)
+
+
+class GoogleServiceAccountAuthenticator(OAuthJWTAuthenticator, metaclass=SingletonMeta):
+    """JWT-bearer authenticator for Google Service Accounts."""
+
+    @property
+    def _sa_creds(self) -> dict:
+        return self.config.get("service_account_credentials", {})
+
+    @property
+    def client_id(self):
+        return self._sa_creds.get("client_email")
+
+    @property
+    def private_key(self):
+        key = self._sa_creds.get("private_key")
+        if key is None:
+            return None
+        # PEM newlines may be supplied as literal "\n" via env vars.
+        return key.replace("\\n", "\n")
+
+    @property
+    def oauth_request_body(self) -> dict:
+        request_time = utc_now()
+        return {
+            "iss": self.client_id,
+            "scope": GOOGLE_SHEETS_SCOPES,
+            "aud": self.auth_endpoint,
+            "exp": math.floor((request_time + timedelta(hours=1)).timestamp()),
+            "iat": math.floor(request_time.timestamp()),
+        }
 
 
 class GoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta):

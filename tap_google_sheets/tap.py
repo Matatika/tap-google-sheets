@@ -78,6 +78,26 @@ class TapGoogleSheets(Tap):
             description="Your google refresh token",
         ),
         th.Property(
+            "service_account_credentials.client_email",
+            th.StringType,
+            description=(
+                "Service account email, e.g. "
+                "tap@my-project.iam.gserviceaccount.com. Takes precedence over "
+                "oauth_credentials when set."
+            ),
+            required=False,
+        ),
+        th.Property(
+            "service_account_credentials.private_key",
+            th.StringType,
+            description=(
+                "Service account PEM private key. Literal `\\n` sequences are "
+                "expanded to newlines for env-var injection."
+            ),
+            required=False,
+            secret=True,
+        ),
+        th.Property(
             "sheets",
             required=False,
             description="The list of configs for each sheet/stream.",
