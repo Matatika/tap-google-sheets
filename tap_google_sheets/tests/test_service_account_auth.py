@@ -50,6 +50,9 @@ def _stub_update_access_token(self):
 class TestGoogleServiceAccountAuthenticatorProperties(unittest.TestCase):
     """Unit tests for GoogleServiceAccountAuthenticator property accessors."""
 
+    def setUp(self):
+        _reset_sa_singleton()
+
     def tearDown(self):
         _reset_sa_singleton()
 
@@ -88,13 +91,16 @@ class TestGoogleServiceAccountAuthenticatorProperties(unittest.TestCase):
 
     def test_oauth_request_payload_uses_jwt_bearer_grant(self):
         auth = _make_auth(_SA_CONFIG)
-        with patch("jwt.encode", return_value="fake.jwt.token", create=True):
+        with patch("jwt.encode", return_value="fake.jwt.token", create=True) as mock_encode:
             payload = auth.oauth_request_payload
 
         self.assertEqual(
             payload["grant_type"], "urn:ietf:params:oauth:grant-type:jwt-bearer"
         )
         self.assertEqual(payload["assertion"], "fake.jwt.token")
+        args, _ = mock_encode.call_args
+        self.assertEqual(args[1], _TEST_PRIVATE_KEY)
+        self.assertEqual(args[2], "RS256")
 
 
 class TestAuthenticatorSelection(unittest.TestCase):
@@ -158,6 +164,23 @@ class TestAuthenticatorSelection(unittest.TestCase):
         stream = TapGoogleSheets(config=config).discover_streams()[0]
 
         self.assertNotIsInstance(stream.authenticator, GoogleServiceAccountAuthenticator)
+
+
+    @responses.activate
+    def test_authenticator_singleton_reused_across_requests(self):
+        responses.add(responses.GET, "https://www.googleapis.com/drive/v2/files/12345",
+                      json=_DRIVE_MOCK, status=200)
+        responses.add(responses.GET,
+                      "https://sheets.googleapis.com/v4/spreadsheets/12345/values/!1:1",
+                      json=_HEADERS_MOCK, status=200)
+
+        with patch.object(GoogleServiceAccountAuthenticator, "update_access_token",
+                          _stub_update_access_token):
+            stream = TapGoogleSheets(config=_SA_CONFIG).discover_streams()[0]
+
+        first = stream.authenticator
+        second = stream.authenticator
+        self.assertIs(first, second)
 
 
 class TestServiceAccountIntegration(unittest.TestCase):
