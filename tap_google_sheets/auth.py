@@ -22,6 +22,13 @@ GOOGLE_SHEETS_SCOPES = (
 class GoogleServiceAccountAuthenticator(OAuthJWTAuthenticator, metaclass=SingletonMeta):
     """JWT-bearer authenticator for Google Service Accounts."""
 
+    def __init__(self, *args, auth_endpoint=None, **kwargs):
+        super().__init__(*args, auth_endpoint=auth_endpoint, **kwargs)
+        # OAuthJWTAuthenticator's legacy stream-based path calls super().__init__(stream=stream)
+        # without forwarding auth_endpoint, so we set it explicitly here.
+        if auth_endpoint is not None:
+            self._auth_endpoint = auth_endpoint
+
     @property
     def _sa_creds(self) -> dict:
         return self.config.get("service_account_credentials", {})
