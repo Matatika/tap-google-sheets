@@ -28,6 +28,11 @@ plugins:
         - name: range
         - name: key_properties
           kind: array
+        - name: workload_identity_credentials
+          kind: password
+          description: JSON string of the Workload Identity Federation credential for Google APIs
+        - name: workload_identity_credentials_file
+          description: Path to the Workload Identity Federation credential JSON file
         - name: sheets
           kind: array
   loaders:

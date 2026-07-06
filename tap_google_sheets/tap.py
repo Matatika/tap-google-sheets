@@ -78,6 +78,25 @@ class TapGoogleSheets(Tap):
             description="Your google refresh token",
         ),
         th.Property(
+            "workload_identity_credentials",
+            th.StringType,
+            description=(
+                "JSON string of the Workload Identity Federation credential for Google APIs."
+                " Takes priority over oauth_credentials when set."
+            ),
+            secret=True,
+            required=False,
+        ),
+        th.Property(
+            "workload_identity_credentials_file",
+            th.StringType,
+            description=(
+                "Path to the Workload Identity Federation credential JSON file."
+                " Used when workload_identity_credentials is not set."
+            ),
+            required=False,
+        ),
+        th.Property(
             "sheets",
             required=False,
             description="The list of configs for each sheet/stream.",
