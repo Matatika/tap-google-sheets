@@ -98,6 +98,50 @@ class ProxyGoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta
         return {}
 
 
+class _BotocoreAwsSecurityCredentialsSupplier:
+    """Supply AWS security credentials to Google WIF via botocore.
+
+    Google's default AWS credential source only reads static env credentials
+    or the EC2 instance metadata service (IMDS). This supplier uses botocore's
+    default credential provider chain instead, so environments where IMDS is
+    unavailable -- notably EKS with IRSA, which exchanges a web identity token
+    for temporary credentials -- resolve correctly.
+    """
+
+    def get_aws_security_credentials(self, context, request):
+        """Return temporary AWS credentials from the botocore provider chain."""
+        import botocore.session
+        from google.auth import exceptions
+        from google.auth.aws import AwsSecurityCredentials
+
+        credentials = botocore.session.get_session().get_credentials()
+        if credentials is None:
+            raise exceptions.RefreshError(
+                "Unable to resolve AWS security credentials from the botocore "
+                "provider chain (checked env vars, web identity token file, "
+                "shared config, and IMDS)."
+            )
+        frozen = credentials.get_frozen_credentials()
+        return AwsSecurityCredentials(
+            frozen.access_key,
+            frozen.secret_key,
+            frozen.token,
+        )
+
+    def get_aws_region(self, context, request):
+        """Return the AWS region resolved by botocore (AWS_REGION, config...)."""
+        import botocore.session
+        from google.auth import exceptions
+
+        region = botocore.session.get_session().get_config_variable("region")
+        if not region:
+            raise exceptions.RefreshError(
+                "Unable to determine the AWS region. Set AWS_REGION or "
+                "AWS_DEFAULT_REGION."
+            )
+        return region
+
+
 class WorkloadIdentityAuthenticator(APIAuthenticatorBase, metaclass=SingletonMeta):
     """Authenticator using Google Workload Identity Federation."""
 
@@ -112,6 +156,7 @@ class WorkloadIdentityAuthenticator(APIAuthenticatorBase, metaclass=SingletonMet
         self._credentials_json = credentials_json
         self._credentials_file = credentials_file
         self._google_credentials = None
+        self._credentials_info = None
 
     def _load_credentials(self):
         if self._credentials_file:
@@ -120,15 +165,38 @@ class WorkloadIdentityAuthenticator(APIAuthenticatorBase, metaclass=SingletonMet
         else:
             info = json.loads(self._credentials_json)
         self.logger.info(f"credential info: {info}")
+        self._credentials_info = info
         return self._credentials_from_info(info)
 
-    def _credentials_from_info(self, info):
+    @staticmethod
+    def _is_aws_external_account(info):
+        if not info or info.get("type") != "external_account":
+            return False
+        environment_id = info.get("credential_source", {}).get("environment_id", "")
+        return environment_id.startswith("aws")
+
+    def _credentials_from_info(self, info, aws_use_botocore=False):
         cred_type = info.get("type")
         if cred_type == "external_account":
             credential_source = info.get("credential_source", {})
             environment_id = credential_source.get("environment_id", "")
             if environment_id.startswith("aws"):
                 from google.auth.aws import Credentials
+
+                if aws_use_botocore:
+                    # Fallback path: the default AWS source could not resolve
+                    # credentials (env static keys / IMDS). Delegate to
+                    # botocore's provider chain, which also handles EKS IRSA
+                    # (AssumeRoleWithWebIdentity from the web identity token
+                    # file) where IMDS is blocked. The supplier replaces
+                    # `credential_source` -- they are mutually exclusive.
+                    info = {k: v for k, v in info.items() if k != "credential_source"}
+                    return Credentials.from_info(
+                        info,
+                        aws_security_credentials_supplier=(
+                            _BotocoreAwsSecurityCredentialsSupplier()
+                        ),
+                    ).with_scopes(GOOGLE_API_SCOPES)
             elif "executable" in credential_source:
                 from google.auth.pluggable import Credentials
             else:
@@ -136,6 +204,7 @@ class WorkloadIdentityAuthenticator(APIAuthenticatorBase, metaclass=SingletonMet
             return Credentials.from_info(info).with_scopes(GOOGLE_API_SCOPES)
         if cred_type == "service_account":
             from google.oauth2 import service_account
+
             return service_account.Credentials.from_service_account_info(
                 info, scopes=GOOGLE_API_SCOPES
             )
@@ -143,11 +212,29 @@ class WorkloadIdentityAuthenticator(APIAuthenticatorBase, metaclass=SingletonMet
 
     def authenticate_request(self, request):
         """Authenticate the request with a fresh WIF access token."""
+        from google.auth import exceptions
         from google.auth.transport.requests import Request as GoogleAuthRequest
 
         if self._google_credentials is None:
             self._google_credentials = self._load_credentials()
         if not self._google_credentials.valid:
-            self._google_credentials.refresh(GoogleAuthRequest())
+            try:
+                self._google_credentials.refresh(GoogleAuthRequest())
+            except exceptions.RefreshError:
+                # The default AWS credential source (env static keys / IMDS)
+                # could not resolve credentials -- e.g. on EKS with IRSA, where
+                # IMDS is blocked and credentials come from a web identity token
+                # file. Fall back to botocore's provider chain, which handles
+                # that case. Re-raise for any non-AWS credential type.
+                if not self._is_aws_external_account(self._credentials_info):
+                    raise
+                self.logger.warning(
+                    "Default AWS credential source failed; falling back to the "
+                    "botocore credential provider chain."
+                )
+                self._google_credentials = self._credentials_from_info(
+                    self._credentials_info, aws_use_botocore=True
+                )
+                self._google_credentials.refresh(GoogleAuthRequest())
         self.auth_headers["Authorization"] = f"Bearer {self._google_credentials.token}"
         return super().authenticate_request(request)
