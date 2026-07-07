@@ -220,17 +220,21 @@ class WorkloadIdentityAuthenticator(APIAuthenticatorBase, metaclass=SingletonMet
         if not self._google_credentials.valid:
             try:
                 self._google_credentials.refresh(GoogleAuthRequest())
-            except exceptions.RefreshError:
+            except (exceptions.RefreshError, exceptions.TransportError) as err:
                 # The default AWS credential source (env static keys / IMDS)
                 # could not resolve credentials -- e.g. on EKS with IRSA, where
                 # IMDS is blocked and credentials come from a web identity token
-                # file. Fall back to botocore's provider chain, which handles
-                # that case. Re-raise for any non-AWS credential type.
+                # file. Depending on how IMDS is blocked this surfaces either as
+                # a RefreshError (proxy returns an error page) or a
+                # TransportError (connection times out). Fall back to botocore's
+                # provider chain, which handles that case. Re-raise for any
+                # non-AWS credential type.
                 if not self._is_aws_external_account(self._credentials_info):
                     raise
                 self.logger.warning(
-                    "Default AWS credential source failed; falling back to the "
-                    "botocore credential provider chain."
+                    "Default AWS credential source failed (%s); falling back to "
+                    "the botocore credential provider chain.",
+                    type(err).__name__,
                 )
                 self._google_credentials = self._credentials_from_info(
                     self._credentials_info, aws_use_botocore=True

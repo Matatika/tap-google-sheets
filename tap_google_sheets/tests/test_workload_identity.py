@@ -169,6 +169,38 @@ class TestFallbackOnRefresh(unittest.TestCase):
         self.assertEqual(auth._google_credentials, fallback)
         self.assertEqual(auth.auth_headers["Authorization"], "Bearer fallback-token")
 
+    def test_transport_error_triggers_botocore_fallback(self):
+        from google.auth import exceptions
+
+        auth = self._authenticator()
+        primary = MagicMock()
+        primary.valid = False
+        # IMDS unreachable-by-timeout surfaces as TransportError, not RefreshError.
+        primary.refresh.side_effect = exceptions.TransportError("imds timeout")
+        auth._google_credentials = primary
+
+        fallback = MagicMock()
+        fallback.valid = False
+        fallback.token = "fallback-token"
+        fallback.refresh.return_value = None
+
+        with patch.object(
+            WorkloadIdentityAuthenticator,
+            "_credentials_from_info",
+            return_value=fallback,
+        ) as build:
+            with patch(
+                "google.auth.transport.requests.Request", return_value=MagicMock()
+            ):
+                request = MagicMock()
+                request.headers = {}
+                request.url = None
+                auth.authenticate_request(request)
+
+        build.assert_called_once()
+        self.assertTrue(build.call_args.kwargs.get("aws_use_botocore"))
+        self.assertEqual(auth.auth_headers["Authorization"], "Bearer fallback-token")
+
     def test_refresh_error_reraised_for_non_aws(self):
         from google.auth import exceptions
 
