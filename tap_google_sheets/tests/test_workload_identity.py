@@ -77,30 +77,16 @@ class TestBotocoreAwsSecurityCredentialsSupplier(unittest.TestCase):
 
 
 class TestAwsCredentialsWiring(unittest.TestCase):
-    """Test the default AWS source and the botocore fallback."""
+    """Test that AWS external_account resolves through botocore by default."""
 
     def _authenticator(self):
         auth = WorkloadIdentityAuthenticator.__new__(WorkloadIdentityAuthenticator)
         auth.logger = logging.getLogger("test")
-        auth._credentials_info = None
         return auth
 
-    def test_default_aws_uses_google_default_source(self):
-        # Without the fallback flag, the tap keeps google-auth's default AWS
-        # credential source (env static keys / IMDS), not the botocore supplier.
-        creds = self._authenticator()._credentials_from_info(
-            dict(AWS_EXTERNAL_ACCOUNT_INFO)
-        )
-        self.assertNotIsInstance(
-            creds._aws_security_credentials_supplier,
-            _BotocoreAwsSecurityCredentialsSupplier,
-        )
-
-    def test_fallback_uses_botocore_supplier(self):
+    def test_aws_external_account_uses_botocore_supplier(self):
         info = dict(AWS_EXTERNAL_ACCOUNT_INFO)
-        creds = self._authenticator()._credentials_from_info(
-            info, aws_use_botocore=True
-        )
+        creds = self._authenticator()._credentials_from_info(info)
         self.assertIsInstance(
             creds._aws_security_credentials_supplier,
             _BotocoreAwsSecurityCredentialsSupplier,
@@ -108,112 +94,36 @@ class TestAwsCredentialsWiring(unittest.TestCase):
         # Original config dict must not be mutated for the caller.
         self.assertIn("credential_source", info)
 
-    def test_is_aws_external_account(self):
-        cls = WorkloadIdentityAuthenticator
-        self.assertTrue(cls._is_aws_external_account(AWS_EXTERNAL_ACCOUNT_INFO))
-        self.assertFalse(cls._is_aws_external_account(None))
-        self.assertFalse(cls._is_aws_external_account({"type": "service_account"}))
-        self.assertFalse(
-            cls._is_aws_external_account(
-                {"type": "external_account", "credential_source": {"file": "/x"}}
-            )
+    def test_aws_falls_back_to_default_source_without_botocore(self):
+        # If botocore is unavailable, keep google-auth's default AWS source
+        # (env static keys / IMDS) rather than crashing.
+        auth = self._authenticator()
+        with patch.object(
+            WorkloadIdentityAuthenticator,
+            "_aws_security_credentials_supplier",
+            return_value=None,
+        ):
+            creds = auth._credentials_from_info(dict(AWS_EXTERNAL_ACCOUNT_INFO))
+        self.assertNotIsInstance(
+            creds._aws_security_credentials_supplier,
+            _BotocoreAwsSecurityCredentialsSupplier,
         )
 
+    def test_supplier_none_when_botocore_missing(self):
+        import builtins
 
-class TestFallbackOnRefresh(unittest.TestCase):
-    """Test that a failed default refresh falls back to botocore."""
+        real_import = builtins.__import__
 
-    def _authenticator(self):
-        auth = WorkloadIdentityAuthenticator.__new__(WorkloadIdentityAuthenticator)
-        auth.logger = logging.getLogger("test")
-        auth.auth_headers = {}
-        auth.auth_params = {}
-        auth._credentials_json = None
-        auth._credentials_file = None
-        auth._credentials_info = dict(AWS_EXTERNAL_ACCOUNT_INFO)
-        return auth
+        def fake_import(name, *args, **kwargs):
+            if name.startswith("botocore"):
+                raise ImportError("no botocore")
+            return real_import(name, *args, **kwargs)
 
-    def test_refresh_error_triggers_botocore_fallback(self):
-        from google.auth import exceptions
-
-        auth = self._authenticator()
-
-        # Primary credentials: invalid, and refresh raises like IMDS failure.
-        primary = MagicMock()
-        primary.valid = False
-        primary.refresh.side_effect = exceptions.RefreshError("no AWS role name")
-        auth._google_credentials = primary
-
-        # Fallback credentials succeed and yield a token.
-        fallback = MagicMock()
-        fallback.valid = False
-        fallback.token = "fallback-token"
-        fallback.refresh.return_value = None
-
-        with patch.object(
-            WorkloadIdentityAuthenticator,
-            "_credentials_from_info",
-            return_value=fallback,
-        ) as build:
-            with patch(
-                "google.auth.transport.requests.Request", return_value=MagicMock()
-            ):
-                request = MagicMock()
-                request.headers = {}
-                request.url = None
-                auth.authenticate_request(request)
-
-        # Fallback was built with the botocore flag and used for the token.
-        build.assert_called_once()
-        self.assertTrue(build.call_args.kwargs.get("aws_use_botocore"))
-        self.assertEqual(auth._google_credentials, fallback)
-        self.assertEqual(auth.auth_headers["Authorization"], "Bearer fallback-token")
-
-    def test_transport_error_triggers_botocore_fallback(self):
-        from google.auth import exceptions
-
-        auth = self._authenticator()
-        primary = MagicMock()
-        primary.valid = False
-        # IMDS unreachable-by-timeout surfaces as TransportError, not RefreshError.
-        primary.refresh.side_effect = exceptions.TransportError("imds timeout")
-        auth._google_credentials = primary
-
-        fallback = MagicMock()
-        fallback.valid = False
-        fallback.token = "fallback-token"
-        fallback.refresh.return_value = None
-
-        with patch.object(
-            WorkloadIdentityAuthenticator,
-            "_credentials_from_info",
-            return_value=fallback,
-        ) as build:
-            with patch(
-                "google.auth.transport.requests.Request", return_value=MagicMock()
-            ):
-                request = MagicMock()
-                request.headers = {}
-                request.url = None
-                auth.authenticate_request(request)
-
-        build.assert_called_once()
-        self.assertTrue(build.call_args.kwargs.get("aws_use_botocore"))
-        self.assertEqual(auth.auth_headers["Authorization"], "Bearer fallback-token")
-
-    def test_refresh_error_reraised_for_non_aws(self):
-        from google.auth import exceptions
-
-        auth = self._authenticator()
-        auth._credentials_info = {"type": "service_account"}
-        primary = MagicMock()
-        primary.valid = False
-        primary.refresh.side_effect = exceptions.RefreshError("boom")
-        auth._google_credentials = primary
-
-        with patch("google.auth.transport.requests.Request", return_value=MagicMock()):
-            with self.assertRaises(exceptions.RefreshError):
-                auth.authenticate_request(MagicMock())
+        with patch("builtins.__import__", side_effect=fake_import):
+            supplier = (
+                WorkloadIdentityAuthenticator._aws_security_credentials_supplier()
+            )
+        self.assertIsNone(supplier)
 
 
 if __name__ == "__main__":
