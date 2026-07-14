@@ -13,9 +13,9 @@ from tap_google_sheets.auth import (
     ProxyGoogleSheetsAuthenticator,
     WorkloadIdentityAuthenticator,
 )
-
+import logging
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
-
+LOGGER = logging.getLogger(__name__)
 
 class GoogleSheetsBaseStream(RESTStream):
     """google_sheets stream class."""
@@ -33,6 +33,8 @@ class GoogleSheetsBaseStream(RESTStream):
         if self.config.get("workload_identity"):
             if not wif_credentials_json and not wif_credentials_file:
                 raise ValueError("Workload Identity Federation credentials are required")
+
+            LOGGER.info("Using Workload Identity Federation for authentication.")
             return WorkloadIdentityAuthenticator(
                 stream=self,
                 credentials_json=wif_credentials_json,
@@ -47,8 +49,10 @@ class GoogleSheetsBaseStream(RESTStream):
         refresh_token = oauth_credentials.get("refresh_token")
 
         if client_id and client_secret and refresh_token:
+            LOGGER.info("Using OAuth 2.0 for authentication.")
             return GoogleSheetsAuthenticator(stream=self, auth_endpoint=base_auth_url)
 
+        LOGGER.info("Using proxy for authentication.")
         auth_body = {
             "refresh_token": oauth_credentials.get("refresh_token"),
             "grant_type": "refresh_token",
