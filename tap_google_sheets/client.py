@@ -30,7 +30,9 @@ class GoogleSheetsBaseStream(RESTStream):
         """Return a new authenticator object."""
         wif_credentials_json = self.config.get("workload_identity_credentials")
         wif_credentials_file = self.config.get("workload_identity_credentials_file")
-        if wif_credentials_json or wif_credentials_file:
+        if self.config.get("workload_identity"):
+            if not wif_credentials_json and not wif_credentials_file:
+                raise ValueError("Workload Identity Federation credentials are required")
             return WorkloadIdentityAuthenticator(
                 stream=self,
                 credentials_json=wif_credentials_json,

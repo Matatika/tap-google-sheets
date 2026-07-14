@@ -98,26 +98,26 @@ class ProxyGoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta
         return {}
 
 
-class _BotocoreAwsSecurityCredentialsSupplier:
-    """Supply AWS security credentials to Google WIF via botocore.
+class _AwsSecurityCredentialsSupplier:
+    """Supply AWS security credentials to Google WIF via boto3.
 
     Google's default AWS credential source only reads static env credentials
-    or the EC2 instance metadata service (IMDS). This supplier uses botocore's
+    or the EC2 instance metadata service (IMDS). This supplier uses boto3's
     default credential provider chain instead, so environments where IMDS is
     unavailable -- notably EKS with IRSA, which exchanges a web identity token
     for temporary credentials -- resolve correctly.
     """
 
     def get_aws_security_credentials(self, context, request):
-        """Return temporary AWS credentials from the botocore provider chain."""
-        import botocore.session
+        """Return temporary AWS credentials from the boto3 provider chain."""
+        import boto3
         from google.auth import exceptions
         from google.auth.aws import AwsSecurityCredentials
 
-        credentials = botocore.session.get_session().get_credentials()
+        credentials = boto3.Session().get_credentials()
         if credentials is None:
             raise exceptions.RefreshError(
-                "Unable to resolve AWS security credentials from the botocore "
+                "Unable to resolve AWS security credentials from the boto3 "
                 "provider chain (checked env vars, web identity token file, "
                 "shared config, and IMDS)."
             )
@@ -129,11 +129,11 @@ class _BotocoreAwsSecurityCredentialsSupplier:
         )
 
     def get_aws_region(self, context, request):
-        """Return the AWS region resolved by botocore (AWS_REGION, config...)."""
-        import botocore.session
+        """Return the AWS region resolved by boto3 (AWS_REGION, config...)."""
+        import boto3
         from google.auth import exceptions
 
-        region = botocore.session.get_session().get_config_variable("region")
+        region = boto3.Session().region_name
         if not region:
             raise exceptions.RefreshError(
                 "Unable to determine the AWS region. Set AWS_REGION or "
@@ -168,47 +168,37 @@ class WorkloadIdentityAuthenticator(APIAuthenticatorBase, metaclass=SingletonMet
 
     @staticmethod
     def _aws_security_credentials_supplier():
-        """Return a botocore-backed supplier, or None if botocore is absent."""
+        """Return a boto3-backed supplier, or None if boto3 is absent."""
         try:
-            import botocore.session  # noqa: F401
+            import boto3  # noqa: F401
         except ImportError:
             return None
-        return _BotocoreAwsSecurityCredentialsSupplier()
+        return _AwsSecurityCredentialsSupplier()
 
     def _credentials_from_info(self, info):
-        cred_type = info.get("type")
-        if cred_type == "external_account":
-            credential_source = info.get("credential_source", {})
-            environment_id = credential_source.get("environment_id", "")
-            if environment_id.startswith("aws"):
-                from google.auth.aws import Credentials
-
-                # Resolve AWS credentials through botocore's provider chain
-                # (env keys, shared config/SSO, EKS IRSA web identity token,
-                # then IMDS) rather than google-auth's default source, which
-                # only knows static env keys and IMDS. botocore is a superset:
-                # it works on EKS/IRSA and locally via SSO, and still reaches
-                # IMDS on plain EC2 -- while avoiding a ~120s IMDS connect
-                # timeout wherever IMDS is absent. The supplier replaces
-                # `credential_source` (they are mutually exclusive).
-                supplier = self._aws_security_credentials_supplier()
-                if supplier is not None:
-                    info = {k: v for k, v in info.items() if k != "credential_source"}
-                    return Credentials.from_info(
-                        info, aws_security_credentials_supplier=supplier
-                    ).with_scopes(GOOGLE_API_SCOPES)
-            elif "executable" in credential_source:
-                from google.auth.pluggable import Credentials
-            else:
-                from google.auth.identity_pool import Credentials
-            return Credentials.from_info(info).with_scopes(GOOGLE_API_SCOPES)
-        if cred_type == "service_account":
-            from google.oauth2 import service_account
-
-            return service_account.Credentials.from_service_account_info(
-                info, scopes=GOOGLE_API_SCOPES
+        if info.get("type") != "external_account":
+            raise NotImplementedError(
+                f"Credential type {info.get('type')!r} is not supported. "
+                "Only AWS external_account (Workload Identity Federation) is supported."
             )
-        raise ValueError(f"Unsupported credential type: {cred_type!r}")
+
+        environment_id = info.get("credential_source", {}).get("environment_id", "")
+        if not environment_id.startswith("aws"):
+            raise NotImplementedError(
+                f"WIF credential source {environment_id!r} is not supported. "
+                "Only AWS WIF (environment_id starting with 'aws') is supported."
+            )
+
+        from google.auth.aws import Credentials
+
+        supplier = self._aws_security_credentials_supplier()
+        if supplier is not None:
+            info = {k: v for k, v in info.items() if k != "credential_source"}
+            return Credentials.from_info(
+                info, aws_security_credentials_supplier=supplier
+            ).with_scopes(GOOGLE_API_SCOPES)
+
+        return Credentials.from_info(info).with_scopes(GOOGLE_API_SCOPES)
 
     def authenticate_request(self, request):
         """Authenticate the request with a fresh WIF access token."""

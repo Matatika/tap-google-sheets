@@ -97,6 +97,17 @@ class TapGoogleSheets(Tap):
             required=False,
         ),
         th.Property(
+            "workload_identity",
+            th.BooleanType,
+            default=False,
+            description=(
+                "Enable AWS Workload Identity Federation authentication."
+                " When true, uses boto3 credential provider chain (supports IRSA, SSO, and IMDS)."
+                " Requires workload_identity_credentials or workload_identity_credentials_file to be set."
+            ),
+            required=False,
+        ),
+        th.Property(
             "sheets",
             required=False,
             description="The list of configs for each sheet/stream.",
