@@ -143,3 +143,8 @@ dmypy.json
 
 # intellij
 .idea
+
+# External
+/tmp
+**/graphify-out/
+**/.DS_Store

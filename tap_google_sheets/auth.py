@@ -3,10 +3,22 @@
 import json
 from datetime import datetime
 
+import boto3
 import requests
-from singer_sdk.authenticators import OAuthAuthenticator, SingletonMeta
+from google.auth.aws import AwsSecurityCredentials, Credentials
+from google.auth.transport.requests import Request as GoogleAuthRequest
+from singer_sdk.authenticators import (
+    APIAuthenticatorBase,
+    OAuthAuthenticator,
+    SingletonMeta,
+)
 from singer_sdk.helpers._util import utc_now
 from singer_sdk.streams import RESTStream
+
+GOOGLE_API_SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets.readonly",
+    "https://www.googleapis.com/auth/drive.readonly",
+]
 
 
 class GoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta):
@@ -87,3 +99,61 @@ class ProxyGoogleSheetsAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta
     def oauth_request_body(self) -> dict:
         """Define the OAuth request body."""
         return {}
+
+
+class _AwsSecurityCredentialsSupplier:
+    """Supplies AWS credentials via boto3, since google.auth's built-in AWS
+    credential source can't resolve them on EKS/IRSA."""
+
+    def get_aws_security_credentials(self, context, request):
+        frozen = boto3.Session().get_credentials().get_frozen_credentials()
+        return AwsSecurityCredentials(frozen.access_key, frozen.secret_key, frozen.token)
+
+    def get_aws_region(self, context, request):
+        return boto3.Session().region_name
+
+
+class WorkloadIdentityAuthenticator(APIAuthenticatorBase, metaclass=SingletonMeta):
+    """Authenticator using Google Workload Identity Federation."""
+
+    def __init__(
+        self,
+        stream: RESTStream,
+        credentials_json: str = None,
+        credentials_file: str = None,
+    ) -> None:
+        """Create a new authenticator."""
+        super().__init__(stream=stream)
+        self._credentials_json = credentials_json
+        self._credentials_file = credentials_file
+        self._google_credentials = None
+
+    def _load_credentials(self):
+        if self._credentials_file:
+            with open(self._credentials_file) as f:
+                info = json.load(f)
+        else:
+            info = json.loads(self._credentials_json)
+
+        environment_id = info.get("credential_source", {}).get("environment_id", "")
+        if info.get("type") != "external_account" or not environment_id.startswith("aws"):
+            raise NotImplementedError(
+                "Only AWS Workload Identity Federation (external_account with an "
+                "'aws' credential source) is supported."
+            )
+
+        info.pop("credential_source", None)
+        return Credentials.from_info(
+            info,
+            scopes=GOOGLE_API_SCOPES,
+            aws_security_credentials_supplier=_AwsSecurityCredentialsSupplier(),
+        )
+
+    def authenticate_request(self, request):
+        """Authenticate the request with a fresh WIF access token."""
+        if self._google_credentials is None:
+            self._google_credentials = self._load_credentials()
+        if not self._google_credentials.valid:
+            self._google_credentials.refresh(GoogleAuthRequest())
+        self.auth_headers["Authorization"] = f"Bearer {self._google_credentials.token}"
+        return super().authenticate_request(request)

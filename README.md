@@ -46,11 +46,28 @@ https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com
 
 Your `sheet_id` is also required to run `--discover`, as running this will build the streams schema based on your google sheet.
 
-When you open your Google sheet, the url will look something like: 
+When you open your Google sheet, the url will look something like:
 
 `https://docs.google.com/spreadsheets/d/abc123/edit#gid=0`
 
 Your `sheet_id` are the characters after `spreadsheets/d/`, so in this case would be `abc123`.
+
+
+**AWS Workload Identity Federation (WIF)**
+
+Google Workload Identity Federation (WIF) allows Google APIs to trust AWS identities directly — no long-lived Google service account key needs to be stored.
+
+The tap resolves AWS credentials via boto3's provider chain (env vars, IRSA web identity token, SSO session, or IMDS), signs an AWS STS `GetCallerIdentity` request, and passes that signed request to Google STS as proof of identity. Google STS verifies the request by calling AWS, then issues a short-lived Google access token. If `service_account_impersonation_url` is set in the WIF config, the token is used to impersonate a service account (required when the Google Sheet is shared with a specific SA email).
+
+Prerequisites:
+- A Google WIF pool and provider configured to trust your AWS account/role.
+- The WIF external-account credential JSON (generated from Google Cloud Console).
+- boto3 installed (included for Python ≥ 3.10).
+- On EKS: IRSA configured on the pod (AWS_WEB_IDENTITY_TOKEN_FILE + AWS_ROLE_ARN).
+- On local: an active AWS SSO session (`aws sso login`).
+- The Google Sheet shared with the impersonated service account (if using impersonation).
+
+Set `workload_identity` to `true` and provide the external-account credential via either `workload_identity_credentials` (inline JSON) or `workload_identity_credentials_file` (path to the JSON file). When enabled, WIF takes priority over `oauth_credentials`.
 
 ---
 
@@ -61,6 +78,9 @@ Setting | Required | Type             | Description |
 `oauth_credentials.client_id` | Required | String           | Your google client id
 `oauth_credentials.client_secret` | Required | String           | Your google client secret
 `oauth_credentials.refresh_token` | Required | String           | Your google refresh token
+`workload_identity` | Optional | Boolean          | Enable AWS Workload Identity Federation authentication. Takes priority over `oauth_credentials` when `true`. Defaults to `false`.
+`workload_identity_credentials` | Optional | String (secret)  | JSON string of the WIF external-account credential for Google APIs.
+`workload_identity_credentials_file` | Optional | String           | Path to the WIF credential JSON file. Used when `workload_identity_credentials` is not set.
 `sheet_id` | Required | String           | Your target google sheet id
 `output_name` | Optional | String           | Optionally rename the stream and output file or table from the tap
 `child_sheet_name` | Optional | String           | Optionally choose a different sheet from your Google Sheet file
@@ -84,6 +104,9 @@ These settings expand into environment variables of:
 - `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_CLIENT_ID`
 - `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_CLIENT_SECRET`
 - `TAP_GOOGLE_SHEETS_OAUTH_CREDENTIALS_REFRESH_TOKEN`
+- `TAP_GOOGLE_SHEETS_WORKLOAD_IDENTITY`
+- `TAP_GOOGLE_SHEETS_WORKLOAD_IDENTITY_CREDENTIALS`
+- `TAP_GOOGLE_SHEETS_WORKLOAD_IDENTITY_CREDENTIALS_FILE`
 - `TAP_GOOGLE_SHEETS_SHEET_ID`
 - `TAP_GOOGLE_SHEETS_OUTPUT_NAME`
 - `TAP_GOOGLE_SHEETS_CHILD_SHEET_NAME`
@@ -208,5 +231,5 @@ meltano elt tap-google-sheets target-jsonl
 
 ### SDK Dev Guide
 
-See the [dev guide](https://sdk.meltano.com/en/latest/dev_guide.html) for more instructions on how to use the SDK to 
+See the [dev guide](https://sdk.meltano.com/en/latest/dev_guide.html) for more instructions on how to use the SDK to
 develop your own taps and targets.

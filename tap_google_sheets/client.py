@@ -11,10 +11,11 @@ from typing_extensions import override
 from tap_google_sheets.auth import (
     GoogleSheetsAuthenticator,
     ProxyGoogleSheetsAuthenticator,
+    WorkloadIdentityAuthenticator,
 )
-
+import logging
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
-
+LOGGER = logging.getLogger(__name__)
 
 class GoogleSheetsBaseStream(RESTStream):
     """google_sheets stream class."""
@@ -27,8 +28,20 @@ class GoogleSheetsBaseStream(RESTStream):
     @property
     def authenticator(self):
         """Return a new authenticator object."""
-        base_auth_url = "https://oauth2.googleapis.com/token"
+        wif_credentials_json = self.config.get("workload_identity_credentials")
+        wif_credentials_file = self.config.get("workload_identity_credentials_file")
+        if self.config.get("workload_identity"):
+            if not wif_credentials_json and not wif_credentials_file:
+                raise ValueError("Workload Identity Federation credentials are required")
 
+            LOGGER.info("Using Workload Identity Federation for authentication.")
+            return WorkloadIdentityAuthenticator(
+                stream=self,
+                credentials_json=wif_credentials_json,
+                credentials_file=wif_credentials_file,
+            )
+
+        base_auth_url = "https://oauth2.googleapis.com/token"
         oauth_credentials = self.config.get("oauth_credentials", {})
 
         client_id = oauth_credentials.get("client_id")
@@ -36,17 +49,19 @@ class GoogleSheetsBaseStream(RESTStream):
         refresh_token = oauth_credentials.get("refresh_token")
 
         if client_id and client_secret and refresh_token:
+            LOGGER.info("Using OAuth 2.0 for authentication.")
             return GoogleSheetsAuthenticator(stream=self, auth_endpoint=base_auth_url)
 
-        auth_body = {}
-        auth_headers = {}
-
-        auth_body["refresh_token"] = oauth_credentials.get("refresh_token")
-        auth_body["grant_type"] = "refresh_token"
-
-        auth_headers["authorization"] = oauth_credentials.get("refresh_proxy_url_auth")
-        auth_headers["Content-Type"] = "application/json"
-        auth_headers["Accept"] = "application/json"
+        LOGGER.info("Using proxy for authentication.")
+        auth_body = {
+            "refresh_token": oauth_credentials.get("refresh_token"),
+            "grant_type": "refresh_token",
+        }
+        auth_headers = {
+            "authorization": oauth_credentials.get("refresh_proxy_url_auth"),
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
 
         return ProxyGoogleSheetsAuthenticator(
             stream=self,
